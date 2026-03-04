@@ -1,0 +1,43 @@
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "permissions": {
+    "allow": [
+    ],
+    "defaultMode": "plan"
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Blow.aiff &"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Blow.aiff &"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "/Users/cory/.claude/statusline-command.sh"
+  },
+  "enabledPlugins": {
+    "voltagent-core-dev@voltagent-subagents": true
+  },
+  "autoUpdatesChannel": "stable",
+  "minimumVersion": "2.1.59",
+  "skipDangerousModePermissionPrompt": true
+}
