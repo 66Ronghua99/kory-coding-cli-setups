@@ -1,95 +1,144 @@
 ---
 name: syncdoc
-description: 以代码为基准，整理过时文档并同步项目进度状态
+description: 以代码为基准，整理过时文档并同步项目进度状态；在文档缺失或职责不清时，按标准模板初始化 PROGRESS/MEMORY/NEXT_STEP/.plan。
 ---
 
-# 代码优先文档同步 Workflow
+# SyncDoc: 项目进度文档同步与初始化（强化版）
 
-适用场景：项目经过一段时间迭代后，文档（进度、规划、报告等 md 文件）与代码现状存在偏差，需要以**代码为准**对文档进行审查、归档和更新。
+## Goal
 
----
+在不改变真实业务代码行为的前提下，稳定完成两件事：
+- 用统一、可验证、可复现的结构维护 `PROGRESS.md`、`MEMORY.md`、`NEXT_STEP.md`
+- 将 `.plan/` 文档夹规范化，保证设计文档与执行清单同构
 
-## Step 1：读取项目上下文
+## Hard Constraints (Non-Negotiable)
 
-1. 读取 `PROGRESS.md`（或等效进度文件），了解各阶段声明的完成状态。
-2. 读取 `Memory.md`（若存在），了解已知的历史教训与约束。
-3. 列出项目根目录，识别所有散落的临时/阶段性 `.md` 文件（非 README、非 PROGRESS、非 Memory）。
+1. **事实来源约束**：所有“已完成”结论必须有代码或工件证据。
+2. **职责边界约束**：
+- `PROGRESS.md` 只写里程碑状态、TODO/DONE、渐进加载入口。
+- `MEMORY.md` 只写可复用经验（根因/修复/预防）、环境约束、执行约定。
+- `NEXT_STEP.md` 永远只保留一条可立即执行指针。
+3. **同构约束**：三份核心文档标题顺序必须与模板一致，不得自定义重排。
+4. **单指针约束**：`PROGRESS.md` 的 `P0-NEXT` 与 `NEXT_STEP.md` 必须语义一致。
+5. **计划文档约束**：Design Path 必须使用 `.plan` 命名规范与模板骨架。
 
----
+## Step 0: 模板初始化/重整
 
-## Step 2：以代码为准，验证实际状态
+触发条件（任一满足即执行初始化）：
+- `PROGRESS.md` / `MEMORY.md` / `NEXT_STEP.md` 任一缺失
+- 三份文档职责混写
+- `.plan/` 缺失统一命名与模板结构
 
-**针对每个声明"已完成"或"进行中"的阶段/功能**，执行以下检查：
+必须加载以下模板：
+1. `references/progress-template.md`
+2. `references/memory-template.md`
+3. `references/next-step-template.md`
+4. `references/plan-template.md`
+5. `references/checklist-template.md`
 
-- **模块结构**：`list_dir src/` 确认对应模块/目录是否存在。
-- **核心实现**：用 `view_file_outline` 查看关键文件，确认核心类/函数已实现而非只有占位符。
-- **CLI 接入**：检查 `commands/` 或等效入口，确认功能已接入用户可调用路径，而非只在内部模块中存在。
-- **测试覆盖**：检查 `tests/` 中是否有对应测试文件，测试数量是否合理。
-- **关键字搜索**：用 `grep_search` 搜索 `"not yet implemented"` / `"TODO"` / `"Phase X"` 等残留注释，识别实际未完成的路径。
+初始化规则：
+- 先按模板建“空骨架”，再用项目事实填充。
+- 未确认的事实写为 `TBD`，不得臆测。
+- 若已有内容可复用，迁移到正确文档而不是直接删除。
 
-> **原则**：文档说"完成"不算完成，代码里存在可调用且无 "not implemented" fallback 才算完成。
+## Step 1: 读取上下文（固定顺序）
 
----
+1. `PROGRESS.md`
+2. `NEXT_STEP.md`
+3. `MEMORY.md`
+4. `.plan/` 当前活跃设计文档与 checklist
+5. 项目目录结构与关键实现文件
 
-## Step 3：识别过时文档
+若核心文档缺失：回到 Step 0 初始化后继续。
 
-对每个根目录（或文档目录）中的 `.md` 文件，判断以下类别：
+## Step 2: 证据核对（以代码/工件为准）
 
-| 类别 | 判断标准 | 处理方式 |
-|------|---------|---------|
-| **阶段性报告** | 测试报告、E2E 报告、仅描述某迭代结果 | 归档至 `docs/`，加过时标记 |
-| **阶段性规划** | 某阶段的改进计划、设计草稿，已被代码实现或后续设计取代 | 归档至 `docs/`，加过时标记 |
-| **无关文档** | 与本项目业务无直接关联（如通用工具手册） | 在原位加 `[!WARNING]` 说明，或移至 `docs/` |
-| **活跃文档** | README、PROGRESS、Memory、当前阶段 design doc | 保留，更新内容 |
+对每条 DONE/里程碑结论做最小证据核对：
+- 结构证据：目录/文件是否存在
+- 行为证据：入口是否已接线到可执行路径
+- 质量证据：是否有测试、构建或最小运行工件
+- 漂移证据：是否存在 `TODO` / `not implemented` / 旧阶段命名
 
----
+判定原则：
+- “文档说完成”不算完成。
+- “代码可调用 + 工件可核验”才算完成。
 
-## Step 4：归档过时文档
+## Step 3: 同步与归档
 
-对需要归档的文件：
+### 3.1 同步 `PROGRESS.md`
+- 按模板固定顺序保留章节。
+- `TODO` 里必须且只能有一条 `P0-NEXT`。
+- `DONE` 每条尽量附 `Evidence`（命令、工件、文件路径）。
 
-1. 将文件内容**复制**到 `docs/<原文件名>`（保留历史，不删除）。
-2. 在 `docs/` 版本文件**顶部**添加归档标记：
-   ```markdown
-   > [!NOTE]
-   > **归档文档** | 归档日期：YYYY-MM-DD
-   > 简要说明本文档的历史作用和归档原因。本文档作为历史参考保留，不再主动维护。
-   ```
-3. 将根目录原文件**替换**为重定向提示：
-   ```markdown
-   > [!NOTE]
-   > **已归档** | 归档日期：YYYY-MM-DD
-   > 本文档已移至 [`docs/<文件名>`](docs/<文件名>)，请在该位置查看。
-   ```
+### 3.2 同步 `MEMORY.md`
+- 每条经验必须可复用，推荐 `Symptom | Root Cause | Fix | Prevention`。
+- 移除阶段状态描述（迁回 `PROGRESS.md`）。
 
----
+### 3.3 同步 `NEXT_STEP.md`
+- 覆盖为单条指针，不追加历史。
+- 必须包含：阶段名 + 动作 + 验收证据 + 输出物。
 
-## Step 5：同步 PROGRESS.md
+### 3.4 规范 `.plan/`
+- 设计文档命名：`.plan/{YYYYMMDD}_{feature_name}.md`
+- 清单命名：`.plan/checklist_{feature_name}.md`
+- 若存在旧命名/过时文档：归档并在文首加归档说明。
 
-根据 Step 2 的代码验证结果，更新 `PROGRESS.md`：
-
-- **状态表格**：将经代码确认已完成的阶段改为 `✅ 已完成`；未完成的保持 `🔄` / `🟡`。
-- **里程碑**：已完成的条目加删除线 `~~...~~` 并标注 `✅ 已完成`，注明后续迭代方向（如有）。
-- **更新日期**：修改文件顶部的"最后更新"日期。
-
----
-
-## Step 6：修正代码内残留的过时注释
-
-用 `grep_search` 搜索源码中引用旧阶段编号的注释，例如：
-
+归档说明模板：
+```markdown
+> [!NOTE]
+> **归档文档** | 归档日期：YYYY-MM-DD
+> 本文档作为历史参考保留，不再主动维护。
 ```
-"Phase 2 execution engine is in development"
-"Currently in Phase X development"
-```
 
-将其更新为准确的当前阶段表述，确保代码注释与 PROGRESS.md 保持一致。
+## Step 4: 自检清单（执行后必须通过）
 
----
+- [ ] `PROGRESS.md` 是否包含且仅包含模板定义章节（顺序一致）
+- [ ] `TODO` 是否只有一条 `P0-NEXT`
+- [ ] `NEXT_STEP.md` 是否只有一条动作指针（单段）
+- [ ] `P0-NEXT` 与 `NEXT_STEP` 是否语义对齐
+- [ ] `MEMORY.md` 是否无阶段状态叙述
+- [ ] `.plan` 是否符合命名规范并含设计 + checklist 成对文件
+- [ ] 所有“完成”结论是否可追溯到证据
 
-## 验收检查
+## Output Contract
 
-- [ ] 所有阶段状态均已通过代码验证，而非仅凭文档互相印证
-- [ ] 过时文档已归档至 `docs/`，根目录保留重定向入口
-- [ ] `PROGRESS.md` 状态与代码现实一致
-- [ ] 代码内无残留的错误阶段注释
+每次执行后必须输出以下结构：
+1. `Sync Summary`
+2. `Evidence`
+3. `Doc Changes`
+4. `Plan Folder Changes`
+5. `Validation Result`（逐条列出 Step 4 自检结论）
+6. `Next Pointer`（最终写入 `NEXT_STEP.md` 的完整句子）
+
+## Progressive Loading
+
+- L0（默认）: `PROGRESS.md` -> `NEXT_STEP.md` -> `MEMORY.md`
+- L1（当前阶段）: 当前活跃 `.plan/{date}_{feature}.md` + `checklist_{feature}.md`
+- L2（历史追溯）: 仅在回归/争议时加载其他 `.plan/*.md`
+
+## Appendix
+
+若项目为全新初始化且需求未冻结，先调用 `pm-progress-requirement-discovery` 明确：
+- Problem / Scope / Non-goals / Acceptance Criteria
+再回到本技能执行文档初始化。
+
+## Cross-Skill Orchestration
+
+`syncdoc` is both entry guard and closing guard in the PM workflow chain:
+
+1. Entry Guard
+- Run before `pm-progress-requirement-discovery` when docs are missing/misaligned.
+- Ensure `PROGRESS/MEMORY/NEXT_STEP/.plan` structure is valid.
+
+2. Requirement-to-Execution Bridge
+- After `pm-progress` + `drive-pm-closed-loop`, sync their outputs back into core docs.
+- Required alignment:
+  - `PROGRESS.md` contains exactly one `P0-NEXT`
+  - `NEXT_STEP.md` single sentence semantically equals `P0-NEXT`
+  - `.plan` contains requirement/design/checklist artifacts with valid naming
+
+3. Closure Guard
+- Do not mark stage complete until documentation and evidence are isomorphic:
+  - Core docs updated
+  - `.plan` active artifacts updated
+  - Evidence paths traceable
