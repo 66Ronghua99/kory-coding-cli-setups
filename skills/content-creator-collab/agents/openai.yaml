@@ -1,0 +1,4 @@
+interface:
+  display_name: "内容共创"
+  short_description: "先讨论选题，再输出高传播口播脚本"
+  default_prompt: "Use $content-creator-collab. If my topic is still fuzzy, run mode discuss-topic. If my topic is already frozen, run mode to-hot-script."

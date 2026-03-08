@@ -1,0 +1,4 @@
+interface:
+  display_name: "IP爆款脚本"
+  short_description: "兼容旧入口，实际归并到内容共创的出稿阶段"
+  default_prompt: "Use $content-creator-collab in mode to-hot-script to rewrite my finalized topic into a hook-first Chinese short-video script."
