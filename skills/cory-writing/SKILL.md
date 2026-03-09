@@ -1,9 +1,9 @@
 ---
 name: cory-writing
-description: 按照 writings 内容库规范，创建和管理每日计划（Daily Plan）与思考碎片（Memory）。包括模板复制、frontmatter 填写、文件命名和状态管理。
+description: 按照 writings 内容库规范，创建和管理每日计划（Daily Plan）与思考碎片（Memory），并提供安全的 Git 操作指南，避免 OpenCLAW 与用户操作产生冲突。
 ---
 
-# Cory Writing: 每日计划与思考碎片管理
+# Cory Writing: 内容库管理与 Git 安全操作
 
 ## Goal
 
@@ -200,3 +200,123 @@ cp _template/memory.md memory/2026-03-09_title.md
 # 更新 Memory 状态
 # 编辑文件 frontmatter 中的 status 字段
 ```
+
+---
+
+# writings 文件夹管理指南（OpenCLAW 专用）
+
+> 本章节专门为 OpenCLAW 等 Agent 提供，避免操作 writings 时产生 Git 冲突
+
+## 核心原则
+
+**Agent 严禁执行的 Git 操作：**
+- ❌ `git commit`
+- ❌ `git push`
+- ❌ `git pull`（带自动合并）
+- ❌ `git merge`
+- ❌ `git rebase`
+- ❌ `git reset --hard`
+- ❌ `git checkout -- .`（丢弃本地修改）
+
+**Agent 可以执行的 Git 操作：**
+- ✅ `git status` - 查看当前状态
+- ✅ `git diff` - 查看修改内容
+- ✅ `git stash` - 临时保存本地修改
+- ✅ `git stash pop` - 恢复本地修改
+
+## 写入文件前的安全检查
+
+### 检查清单（写入前必做）
+
+```bash
+# 1. 查看当前 git 状态
+git status
+
+# 2. 检查是否有未提交的本地修改
+# 若有 Untracked files 可以继续
+# 若有 modified files，谨慎处理
+```
+
+### 安全情况判断
+
+| 状态 | Agent 操作 |
+|------|----------|
+| `Untracked files` only | ✅ 安全，可以创建新文件 |
+| `Changes not staged` | ⚠️ 询问用户如何处理 |
+| `Changes to be committed` | ⚠️ 不要添加新文件，询问用户 |
+| 干净状态 (nothing to commit) | ✅ 安全 |
+
+## 写入文件流程
+
+### Step 1: 检查 git 状态
+
+```bash
+git status
+```
+
+### Step 2: 判断是否可以写入
+
+- 若只有 `Untracked files` → 可以创建
+- 若有本地修改 → 询问用户
+
+### Step 3: 创建/编辑文件
+
+按本 skill 规范创建 Daily Plan 或 Memory
+
+### Step 4: 报告修改
+
+写入完成后，报告：
+- 创建了哪些文件
+- 建议用户后续手动 `git add` 和 `commit`
+
+## 冲突预防策略
+
+### 1. 分散存放
+
+Agent 创建的文件分散在不同子目录：
+- `_daily/` - 每日计划
+- `memory/` - 思考碎片
+- `YYYY-MM/` - 每月内容
+
+避免与用户正在编辑的文件冲突。
+
+### 2. 小步提交建议
+
+创建文件后，输出以下提示：
+
+```
+📝 文件已创建，请手动执行：
+git add _daily/2026-03-09.md
+git commit -m "feat: add daily plan for 2026-03-09"
+```
+
+### 3. 禁止自动合并
+
+如果 `git pull` 可能产生冲突，Agent 必须：
+1. 先 `git stash`
+2. 询问用户是否继续
+3. 或建议用户手动处理
+
+## 紧急情况处理
+
+### 情况：用户正在编辑同一文件
+
+**错误做法：** 直接覆盖用户修改
+**正确做法：**
+1. 询问用户
+2. 或使用 `git diff` 比较差异后合并
+
+### 情况：产生冲突
+
+**错误做法：** 强制提交
+**正确做法：**
+1. 停止操作
+2. 报告冲突文件列表
+3. 等待用户手动解决
+
+## OpenCLAW 特殊提示
+
+- OpenCLAW 以独立进程运行，可能与用户操作同时进行
+- 始终假设用户可能在本地手动编辑文件
+- 写入前 `git status` 是强制检查
+- 不确定时优先询问用户
