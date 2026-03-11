@@ -1,32 +1,32 @@
 ---
 name: drive-pm-closed-loop
-description: Turn product requirement discussions into an executable and verifiable minimum closed loop, then define a prioritized iteration roadmap from project progress. Use when the user asks to discuss project requirements, clarify scope, choose next direction, define acceptance criteria, or converge ambiguous ideas into a concrete PM execution plan.
+description: Compress a frozen requirement into one executable and verifiable minimum closed loop with explicit acceptance checks, deferred scope, and a single next action.
 ---
 
 # Drive PM Closed Loop
 
 ## Goal
 
-Convert requirement conversations into:
+Convert a frozen requirement into:
 - One executable minimum closed loop
 - Testable acceptance criteria
 - A prioritized next-iteration plan
 
 ## Run Workflow
 
-1. Align objective and constraints
-- Extract business objective, target user, timeline, available resources, and hard constraints.
-- Identify missing inputs and state explicit assumptions before proposing a plan.
+1. Validate requirement freeze
+- Read the requirement snapshot first.
+- If problem, scope, non-goals, or acceptance criteria are still ambiguous, stop and return to `pm-progress-requirement-discovery`.
 
 2. Freeze one minimum closed loop
 - Keep scope to one user journey and one measurable outcome.
 - Reject "build everything first" requests and force a smallest valuable loop.
-- Load `references/minimum-loop-template.md` and fill all required fields.
+- Define the minimum slice that can be executed and verified.
 
 3. Write executable requirements
-- Load `references/prd-template.md`.
 - Define scope and non-goals explicitly.
 - Translate ambiguous statements into deterministic rules and acceptance criteria.
+- Name what is intentionally deferred.
 
 4. Define verification plan
 - Specify how to verify behavior (manual checkpoints or automated tests).
@@ -44,6 +44,7 @@ Convert requirement conversations into:
 - Close one loop before expansion: do not expand roadmap before minimum loop is verifiable.
 - Make outcomes measurable: every goal must map to an observable signal.
 - Keep tradeoffs explicit: explain what is intentionally deferred.
+- Do not reopen requirement discovery unless the requirement snapshot is incomplete or contradictory.
 
 ## Use Output Contract
 
@@ -55,12 +56,6 @@ Always return these sections in order:
 4. `Next Iteration Plan`
 
 If information is incomplete, keep the same sections and mark assumptions inline.
-
-## Load References Progressively
-
-- Read `references/minimum-loop-template.md` when defining the first executable loop.
-- Read `references/prd-template.md` when drafting a requirement document.
-- Read `references/iteration-template.md` when prioritizing post-loop improvements.
 
 ## Cross-Skill Handoff (with `pm-progress-requirement-discovery` and `syncdoc`)
 
@@ -77,6 +72,7 @@ If information is incomplete, keep the same sections and mark assumptions inline
 ### Required Output Fields
 - `feature_name`
 - `stage_name`
+- `requirement_source`
 - `minimum_loop_scope`
 - `acceptance_criteria`
 - `verification_steps`

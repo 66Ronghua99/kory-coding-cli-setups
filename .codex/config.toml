@@ -1,0 +1,47 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+
+model = "gpt-5.4"
+model_provider = "openai"
+model_reasoning_effort = "high"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+[features]
+multi_agent = true
+
+[agents]
+max_threads = 3
+max_depth = 1
+
+[agents.explorer]
+description = "Read-only repository explorer for evidence gathering, code path tracing, and implementation inventory."
+config_file = "agents/explorer.toml"
+
+[agents.architect]
+description = "Architecture specialist for module boundaries, migration planning, and interface design."
+config_file = "agents/architect.toml"
+
+[agents.reviewer]
+description = "Read-only correctness and regression reviewer focused on bugs, risk, and missing tests."
+config_file = "agents/reviewer.toml"
+
+[projects."/Users/cory/codes/openclaw"]
+trust_level = "trusted"
+
+[projects."/Users/cory/codes/Sasiki"]
+trust_level = "trusted"
+
+[projects."/Users/cory/.claude"]
+trust_level = "trusted"
+
+[projects."/Users/cory/codes/Sasiki-dev"]
+trust_level = "trusted"
+
+[projects."/Users/cory/codes/Kory_whisper"]
+trust_level = "trusted"
+
+[projects."/Users/cory/.coding-cli"]
+trust_level = "trusted"
+
+[projects."/Users/cory/papers/writings"]
+trust_level = "trusted"

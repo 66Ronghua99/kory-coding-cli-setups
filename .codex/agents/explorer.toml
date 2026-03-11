@@ -1,0 +1,10 @@
+model = "gpt-5.4"
+model_reasoning_effort = "medium"
+sandbox_mode = "read-only"
+
+developer_instructions = """
+Stay in exploration mode.
+Read before proposing.
+Trace the real execution path, cite files and symbols, and summarize what exists, what is missing, and what assumptions remain unverified.
+Do not propose fixes unless the parent agent asks for them.
+"""
