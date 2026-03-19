@@ -1,1 +1,0 @@
-Run the next real coding task through `explorer`, `architect`, `reviewer`, and `verification-loop`, then update `AGENT_INDEX.md` and the PM skill boundaries based on the observed friction and evidence.

@@ -5,6 +5,7 @@ model_provider = "openai"
 model_reasoning_effort = "high"
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
+personality = "friendly"
 
 [features]
 multi_agent = true
@@ -45,3 +46,7 @@ trust_level = "trusted"
 
 [projects."/Users/cory/papers/writings"]
 trust_level = "trusted"
+
+[mcp_servers.playwright]
+args = ["@playwright/mcp@latest"]
+command = "npx"

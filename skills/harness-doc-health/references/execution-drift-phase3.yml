@@ -1,0 +1,45 @@
+roots:
+  - "docs/superpowers/specs"
+  - "docs/superpowers/plans"
+  - "artifacts"
+
+doc_types:
+  - "spec"
+  - "plan"
+  - "evidence"
+
+statuses:
+  - "draft"
+  - "active"
+  - "deprecated"
+  - "superseded"
+  - "archived"
+
+source_sections:
+  frozen_contracts:
+    heading: "Frozen Contracts"
+  acceptance:
+    heading: "Acceptance"
+
+execution_truth:
+  heading: "Execution Truth"
+  schema: "harness-execution-truth.v1"
+  required_claim_fields:
+    - "claim_id"
+    - "source_spec"
+    - "source_anchor"
+    - "source_hash"
+
+verified_claims:
+  heading: "Verified Claims"
+  schema: "harness-verified-claims.v1"
+  required_claim_fields:
+    - "claim_id"
+    - "plan_path"
+    - "plan_claim_id"
+    - "plan_hash"
+    - "artifacts"
+
+warning_rules:
+  - "active_plan_missing_execution_truth"
+  - "partial_evidence_coverage"

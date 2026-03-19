@@ -1,0 +1,51 @@
+roots:
+  - "docs/superpowers/specs"
+  - "docs/superpowers/plans"
+  - "artifacts"
+
+doc_types:
+  - "spec"
+  - "plan"
+  - "evidence"
+
+statuses:
+  - "draft"
+  - "active"
+  - "deprecated"
+  - "superseded"
+  - "archived"
+
+relation_fields:
+  - "implements"
+  - "verified_by"
+  - "supersedes"
+  - "related"
+
+allowed_relations:
+  spec:
+    - "supersedes"
+    - "related"
+  plan:
+    - "implements"
+    - "verified_by"
+    - "supersedes"
+    - "related"
+  evidence:
+    - "supersedes"
+    - "related"
+
+required_relations: {}
+
+type_targets:
+  plan:
+    implements: "spec"
+    verified_by: "evidence"
+
+same_type_relations:
+  - "supersedes"
+
+warning_rules:
+  - "active_plan_missing_implements"
+  - "deprecated_reference"
+  - "unanchored_superseded"
+  - "isolated_document"

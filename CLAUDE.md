@@ -1,6 +1,6 @@
 # User-Level Collaboration AGENTS
 
-> **Hints For Claude Code (Ignored by other coding agents)**: 请使用Minimax Web Search MCP来进行网络搜索
+> **Hints For Claude Code (Ignored by other coding agents)**: 请使用Minimax Web Search MCP来进行网络搜索，其次是web_fetch，禁止使用内置web search
 
 ## 0. North Star
 以下指南适用于所有**代码工程项目**，为确保代码不过度迅速膨胀失控。核心理念为：在宏观目标的大背景下，以最小可验证闭环推进复杂任务：先保证可执行与可验证，再提升智能化与体验。
@@ -30,6 +30,20 @@
 - Gate 驱动：未过 Gate 不进入下一阶段
 - 文档与实现同构：流程、代码、文档必须互相可追溯
 
+### 1.3 Agent / Skill 路由强制入口
+- 若仓库根目录存在 `AGENT_INDEX.md`，在进入执行前必须读取
+- `AGENTS.md` 是政策层；项目根目录 `AGENT_INDEX.md` 是路由层；`~/.codex/agents/*.toml` 是全局角色层；`~/.codex/skills/*/SKILL.md` 是全局流程层
+- 若项目有本地 `skills/` 或 `.codex/agents/` 覆盖定义，优先读取项目本地版本
+- 若路由不清晰，先补路由再执行，不允许继续把职责堆回主代理
+
+### 1.4 多层级 AGENTS 文档治理
+- 用户级 `AGENTS.md` 负责全局协作规则、质量门禁、技能与角色路由原则
+- 项目根 `AGENTS.md` 负责项目概览、目录入口、关键流程、项目级约束
+- 模块级 `AGENTS.md` 仅在大模块/大边界存在时添加，例如 `frontend/`、`backend/`、`packages/core/`
+- 禁止为普通小目录批量铺设 `AGENTS.md`，避免文档膨胀和失修
+- 只有当目录同时具备“独立职责边界、独立入口、易踩坑、高频跨模块修改”中的至少两项时，才建议新增模块级 `AGENTS.md`
+- `AGENTS.md` 负责静态说明；`PROGRESS/MEMORY/NEXT_STEP/.plan` 负责动态状态，不得混写
+
 ## 2. Why This Works (可控性的来源)
 - 范围可控：每阶段只允许一个主目标和明确非目标
 - 风险可控：先走确定性路径，再做智能检索与策略优化
@@ -58,7 +72,7 @@
 - 把阶段结论沉淀到 `.plan/checklist_*.md`
 
 ## 4. Context Loading Protocol (Progressive)
-- L0 默认加载：`PROGRESS.md -> NEXT_STEP.md -> MEMORY.md`
+- L0 默认加载：`PROGRESS.md -> NEXT_STEP.md -> MEMORY.md -> AGENT_INDEX.md(若存在)`
 - L1 阶段加载：根据 `PROGRESS.md` 与 `NEXT_STEP.md` 阅读当前阶段对应 `.plan/{date}_{feature}.md` + checklist
 - L2 历史加载：仅在回归/对齐争议时加载历史 `.plan/*.md`
 
@@ -147,6 +161,33 @@
 - checklist 每项必须可验证，状态仅允许 `[ ]` / `[x]`
 - `.plan` 里的结论必须可回链到代码、测试或工件
 
+## 6.7 Project Context Docs Governance
+- 推荐层级：
+  - 用户级 `AGENTS.md`
+  - 项目根 `AGENTS.md`
+  - 关键模块级 `AGENTS.md`
+- 不推荐层级：
+  - `utils/`
+  - `types/`
+  - `hooks/`
+  - 纯组件或纯常量目录
+- 项目根 `AGENTS.md` 建议包含：
+  - Project Overview
+  - Directory Map
+  - Read First
+  - Key Flows
+  - Module Boundaries
+  - Quality Gates
+  - Related Docs
+- 模块级 `AGENTS.md` 建议包含：
+  - Purpose
+  - Ownership Boundary
+  - Entry Points
+  - Key Files
+  - Common Pitfalls
+  - How To Verify Changes
+- 需要新增或重整多层级 `AGENTS.md` 时，优先调用 `agents-hierarchy-sync` skill
+
 ## 7. Skill Orchestration Contract (`syncdoc` + `pm-progress` + `drive-pm-closed-loop`)
 
 ### 7.1 初始化阶段（项目或阶段启动）
@@ -155,16 +196,18 @@
 - 输出：三核心文档骨架 + `.plan` 规范命名骨架
 
 2. `pm-progress-requirement-discovery`
-- 目标：从当前进度和未知项中挖掘需求缺口，冻结 Requirement v0
+- 目标：从当前进度和未知项中冻结 Requirement v0
 - 输出：高优先级问题集 + Requirement Snapshot
 - 落盘建议：`.plan/{YYYYMMDD}_{feature}_requirement_v0.md`
+- 严禁输出实施步骤、架构迁移方案或任务拆分
 
 3. `drive-pm-closed-loop`
-- 目标：将 Requirement v0 转为“单步最小可执行闭环”
+- 目标：将已冻结的 Requirement v0 转为“单步最小可执行闭环”
 - 输出：Minimum Closed Loop + Verification Plan + Next Iteration Plan
 - 落盘建议：
   - `.plan/{YYYYMMDD}_{feature}_closed_loop_v0.md`
   - `.plan/checklist_{feature}_closed_loop_v0.md`
+- 若 Requirement 未冻结，必须退回 `pm-progress`
 
 4. `syncdoc`（回环）
 - 目标：把阶段结论同步回三核心文档
@@ -184,6 +227,13 @@
 - 未经过 `pm-progress` 的需求冻结，不进入 `drive-pm-closed-loop` 执行阶段
 - 未经过 `drive` 形成最小闭环，不允许在 `PROGRESS` 中标记该阶段为 DONE
 - 未经过 `syncdoc` 回写，不算完成一次阶段闭环
+
+## 7.4 Global Codex Agents
+- `~/.codex/config.toml` 为全局 multi-agent 入口
+- `~/.codex/agents/explorer.toml`：只读探索、执行路径梳理、证据收集
+- `~/.codex/agents/architect.toml`：边界、迁移、接口、兼容性设计
+- `~/.codex/agents/reviewer.toml`：correctness / regression / security / tests 审查
+- 项目若提供本地 `.codex/agents/*.toml`，则项目本地优先
 
 ## 8. Change Control Rules
 - 范围冻结：阶段内发现新需求，默认进入下一阶段 backlog
@@ -222,6 +272,7 @@
 - 读取 PROGRESS.md 对齐当前目标
 - 读取 MEMORY.md 检查已知陷阱
 - 读取 NEXT_STEP 判断P0任务
+- 若存在，读取 AGENT_INDEX.md 判断角色与技能路由
 - 确认加载范围 (Fast Path vs Design Path)
 ```
 

@@ -1,0 +1,19 @@
+{
+  "name": "harness-doc-health",
+  "version": "2.0.0",
+  "description": "全自动文档健康检查工具，确保文档作为唯一真源的一致性",
+  "main": "scripts/doc-health.js",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "keywords": [
+    "documentation",
+    "lint",
+    "consistency",
+    "markdown"
+  ],
+  "license": "MIT"
+}

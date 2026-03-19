@@ -1,252 +1,157 @@
 # User-Level Collaboration AGENTS
 
 ## 0. North Star
-以下指南适用于所有**代码工程项目**，为确保代码不过度迅速膨胀失控。核心理念为：在宏观目标的大背景下，以最小可验证闭环推进复杂任务：先保证可执行与可验证，再提升智能化与体验。
+以下指南适用于所有**代码工程项目**。这个 user-level 文件的职责不是重复 Superpowers 的全部细节，而是强制项目工作走 `superpowers skill set` 的标准闭环，并用少量本地文档把项目状态、路由与验证证据固定下来。
 
-> 核心原则：**分形文档 + 强制同构 + 质量红线 + 渐进加载**
+> 核心原则：**Superpowers First + 分形文档 + 证据先于结论**
 
 > !!非代码项目请忽略以下所有要求!!
 
-## 1. Core Principles, Non-Negotiables (硬约束)
+## 1. Hard Rules
 
-### 1.1 代码变更前强制读取上下文
+### 1.1 编码前强制读取上下文
+每次进入代码工程任务前，先读取：
+```text
+PROGRESS.md
+NEXT_STEP.md
+MEMORY.md
+AGENT_INDEX.md（项目根优先，兜底为 /Users/cory/.coding-cli/AGENT_INDEX.md）
 ```
-模块目录成员清单: PROGRESS.md
-历史错误总结: MEMORY.md
-下一步最小可执行任务指针: NEXT_STEP.md
-```
-**严禁在未读取上述三层文档前编码。**
-如果文件不存在，使用 `syncdoc` skill 生成第一版基础文档。
 
-### 1.2 文档-代码强制同构
-- 每次代码变更必须回环检查：代码 ↔ 文档是否同步
-- 文档-代码脱节 -> 立即停止编码，先对齐文档
-- 单一闭环优先：每次只推进一个可验证目标，避免并行扩散
-- 证据优先于叙述：所有“完成”必须有工件或日志证据
-- 分层解耦：把“能力验证”和“效果优化”拆阶段，避免互相污染结论
-- 渐进加载：按 L0/L1/L2 逐层加载上下文，控制认知与 token 成本
-- Gate 驱动：未过 Gate 不进入下一阶段
-- 文档与实现同构：流程、代码、文档必须互相可追溯
+- 若项目缺少根级 `AGENTS.md`，先补最小版本再继续。
+- 若缺少 `PROGRESS.md`、`MEMORY.md`、`NEXT_STEP.md`，先补最小骨架再继续。
+- 在路由和当前状态不清晰前，不允许直接编码。
 
-### 1.3 Agent / Skill 路由强制入口
-- 根路由文件：`AGENT_INDEX.md`
-- 新任务进入执行前，先根据 `AGENT_INDEX.md` 判断是走 agent 还是 skill
-- `AGENTS.md` 是政策层；`AGENT_INDEX.md` 是路由层；`.codex/agents/*.toml` 是角色层；`skills/*/SKILL.md` 是流程层
-- 若路由不清晰，先补路由再执行，不允许继续把职责堆回主代理
+### 1.2 Superpowers Skill Set 为默认执行入口
+- 每次代码工程对话默认先进入 `using-superpowers`。
+- 只要存在匹配 skill，就必须走该 skill，不允许用临时流程替代。
+- 常用路由如下：
+  - 新功能、行为变化、工作流变化：`brainstorming`
+  - Bug、回归、测试失败、异常行为：`systematic-debugging`
+  - 已批准 spec 或已冻结需求进入实施拆解：`writing-plans`
+  - 开始实施且需要隔离工作区：`using-git-worktrees`
+  - 在支持 subagent 的环境执行计划：`subagent-driven-development`
+  - 不走 subagent 模式但已有书面计划：`executing-plans`
+  - 任意 feature / bugfix 代码实现：`test-driven-development`
+  - 任务边界或交付前审查：`requesting-code-review`
+  - 任何“完成 / 修复 / 通过”声明前：`verification-before-completion`
+  - 分支或工作区收尾：`finishing-a-development-branch`
 
-## 2. Why This Works (可控性的来源)
-- 范围可控：每阶段只允许一个主目标和明确非目标
-- 风险可控：先走确定性路径，再做智能检索与策略优化
-- 质量可控：静态门禁 + 运行证据双重约束
-- 进度可控：`PROGRESS` 只维护当前状态，不混入长篇设计
-- 恢复可控：`NEXT_STEP` 单指针保证中断后可直接续跑
+### 1.3 默认显式失败，避免过度回退
+- 不要为了“看起来更稳”预设大量 fallback、兜底分支或吞异常逻辑。
+- 如果某个前提不成立、依赖缺失、状态非法，优先直接报错，并保留足够的错误上下文让后续 agent 能快速定位。
+- 只有在以下情况才添加 fallback / recovery path：
+  - 已明确写入需求或兼容性契约
+  - 用户体验上必须保底，且成本明显低于暴露错误
+  - 该回退路径本身可测试、可观测、可维护
+- 禁止用宽泛 `try/catch`、静默默认值、自动降级来掩盖真实问题。
+- 允许失败早暴露，优先通过报错、日志、review 和 debugging 闭环迭代，而不是提前堆复杂异常处理。
 
-## 3. Standard Workflow
-1. Requirement Freeze
-- 产出最小 PRD 或闭环定义，写清 Problem / Scope / Non-goals / AC
-- 默认技能：`pm-progress-requirement-discovery`
+### 1.4 文档与实现强制同构
+- `AGENTS.md`：静态政策、目录入口、边界说明
+- `AGENT_INDEX.md`：任务路由与 agent / skill 选择
+- `PROGRESS.md`：当前里程碑、TODO、DONE、参考入口
+- `MEMORY.md`：可复用经验、易踩坑、稳定边界
+- `NEXT_STEP.md`：唯一下一步执行指针
+- `.plan/`：当前闭环的执行计划与 checklist
+- 项目声明的 spec 路径：设计文档，默认 `docs/superpowers/specs/`
+- `artifacts/`：日志、截图、验收证据
 
-2. Design Path
-- 产出 `.plan/{YYYYMMDD}_{feature}.md`
-- 必须包含：Problem、Boundary、Options、Migration、Test Strategy
-- 复杂结构设计优先走 `architect` agent 或 `architecture-review` skill
+一旦文档与实现脱节，先对齐文档，再继续推进。
 
-3. Execution Path
-- 按阶段实现，不跨阶段偷跑
-- 每次实现都要有对应 checklist 勾选项
-- 预研优先走 `explorer` agent
+### 1.5 AGENTS 采用稀疏层级，不做目录污染
+- user-level `AGENTS.md` 只负责全局协作政策
+- 项目根 `AGENTS.md` 负责该仓库的概览、入口、验证方式
+- 模块级 `AGENTS.md` 仅在存在明确边界时添加
+- 不要给 `utils/`、`types/`、`hooks/`、纯常量目录批量铺设 `AGENTS.md`
+- 层级不清晰时，优先使用 `agents-hierarchy-sync`
 
-4. Verification
-- 通过质量门禁
-- 校验运行工件与日志字段是否满足 AC
-- 代码变更后的审查优先走 `reviewer` agent；交付验证优先走 `verification-loop`
+## 2. Standard Superpowers Workflow
+1. Route
+- 读取 `PROGRESS.md -> NEXT_STEP.md -> MEMORY.md -> AGENT_INDEX.md`
+- 加载 `using-superpowers`
+- 由项目 `AGENT_INDEX.md` 决定当前任务应走的 agent / skill
 
-5. Sync Back
-- 更新 `PROGRESS.md`、`MEMORY.md`、`NEXT_STEP.md`
-- 把阶段结论沉淀到 `.plan/checklist_*.md`
+2. Freeze Scope
+- 新功能、行为变化、流程变化先走 `brainstorming`
+- 形成书面 spec，并获得批准后再进入计划阶段
 
-## 4. Context Loading Protocol (Progressive)
-- L0 默认加载：`PROGRESS.md -> NEXT_STEP.md -> MEMORY.md -> AGENT_INDEX.md`
-- L1 阶段加载：根据 `PROGRESS.md` 与 `NEXT_STEP.md` 阅读当前阶段对应 `.plan/{date}_{feature}.md` + checklist
-- L2 历史加载：仅在回归/对齐争议时加载历史 `.plan/*.md`
+3. Plan
+- 使用 `writing-plans`
+- 将执行计划与 checklist 写入项目声明的计划路径
+- 一次只保持一个主闭环处于 Active
 
-触发 L1/L2 的条件：
+4. Execute
+- 实施开始前按需使用 `using-git-worktrees`
+- 优先 `subagent-driven-development`，否则使用 `executing-plans`
+- 任意 feature / bugfix 代码都遵守 `test-driven-development`
+
+5. Review And Verify
+- 在任务边界或交付前使用 `requesting-code-review`
+- 运行项目质量门禁
+- 在任何完成声明前使用 `verification-before-completion`
+
+6. Finish And Sync Back
+- 使用 `finishing-a-development-branch` 完成分支/工作区收尾
+- 回写 `PROGRESS.md`、`MEMORY.md`、`NEXT_STEP.md`、plan checklist 与证据路径
+- `NEXT_STEP.md` 永远只保留一条直接可执行指针
+
+## 3. Context Loading Protocol
+- L0：`PROGRESS.md -> NEXT_STEP.md -> MEMORY.md -> AGENT_INDEX.md`
+- L1：当前 Active spec + 当前 Active plan / checklist
+- L2：历史 specs / plans，仅用于回归、审计、验收口径争议
+
+触发 L1 / L2 的常见条件：
 - 跨模块改造
-- 新增公共契约或配置协议
-- 验收口径冲突
-- 回归失败需要追根溯源
+- 公共契约变化
+- 验收标准漂移
+- 回归问题追根溯源
 
-## 5. File Ownership Contract
-### `PROGRESS.md`
-只记录：
-- 当前里程碑
-- TODO（优先级）
-- DONE（里程碑结论）
-- Reference List（渐进加载入口）
+## 4. Project Context Governance
+- 每个代码仓库都应有一个根级 `AGENTS.md`
+- 模块级 `AGENTS.md` 仅当目录至少满足以下两项时才建议添加：
+  - 独立职责边界
+  - 独立运行入口
+  - 高频变更
+  - 容易遗漏的本地坑点
+  - 高跨模块协调成本
+- 优先少而精的高信号文档，而不是全目录铺文档
 
-不记录：
-- 长篇设计推理
-- 详细排障过程
+## 5. Quality Gate
+交付前必须：
+- 运行项目声明的验证命令
+- 如果项目尚未声明门禁，至少执行最强可用的 `test`、`typecheck`、`build` 等价验证
+- 若任一门禁失败，不得宣称完成，必须明确失败点和修复计划
 
-### `MEMORY.md`
-记录可复用经验：
-- 根因 -> 修复 -> 预防
-- 稳定性策略
-- 容易漂移的决策边界
+## 6. Definition of Done
+只有以下条件同时满足才算 Done：
+- 当前 scope / plan step 已完成
+- 应走的 superpowers skill path 已实际执行
+- 有新鲜的验证证据
+- 审查意见已修复，或明确记录延期理由
+- `PROGRESS.md`、`MEMORY.md`、`NEXT_STEP.md` 与 checklist 已同步
 
-### `NEXT_STEP.md`
-- 永远只保留一条“下一步执行指针”
-- 会话结束时必须可直接执行
+## 7. Handoff Format
+每次交付至少要说明：
+- 这次完成了哪个闭环
+- 证据在哪里
+- 还有什么未完成
+- 下一步 `P0` 动作是什么
 
-### `.plan/*.md`
-- 存阶段需求、设计、评审、实施记录、检查清单
-- 作为审计与复盘依据，不替代 `PROGRESS` 的状态职责
-
-## 6. `.plan/` Folder Governance & Convention
-
-### 6.1 什么时候必须写入 `.plan/`
-满足任一条件必须入 `.plan/`：
-1. 需求尚未冻结，需要明确 `Scope/Non-goals/AC`
-2. 涉及跨模块改造或公共契约变更
-3. 需要阶段性 Gate（如 Requirement Gate / Design Gate / Implementation Gate）
-4. 验收标准需要可追溯证据映射
-
-### 6.2 `.plan/` 应包含什么
-`.plan/` 只保留“阶段决策与执行证据索引”，不替代状态文档：
-1. Requirement 文档（可选但推荐）
-- 内容：Problem / Scope / Non-goals / AC / Risks
-
-2. Design 文档（Design Path 必须）
-- 内容：Problem Statement / Boundary & Ownership / Options & Tradeoffs / Migration Plan / Test Strategy
-
-3. Checklist（Design Path 必须）
-- 内容：Implementation / Evidence / Quality Gates / Docs Sync
-
-4. 验收记录（可选）
-- 内容：AC 对应证据路径、失败点、结论
-
-### 6.3 命名规范
-- Requirement：`.plan/{YYYYMMDD}_{feature}_requirement_v{n}.md`
-- Design：`.plan/{YYYYMMDD}_{feature_name}.md`
-- Checklist：`.plan/checklist_{feature_name}.md`
-- Acceptance（可选）：`.plan/{YYYYMMDD}_{feature}_acceptance.md`
-
-### 6.4 `.plan/` 不应包含什么
-- 不记录“当前状态看板”（应写 `PROGRESS.md`）
-- 不记录长期经验沉淀（应写 `MEMORY.md`）
-- 不堆放大体积原始日志/截图（放 `artifacts/`，在 `.plan` 仅放索引路径）
-
-### 6.5 生命周期与归档
-- `Draft`: 问题澄清中，不可作为执行依据
-- `Active`: 当前阶段唯一执行依据
-- `Frozen`: 对应阶段完成，保留审计
-- `Archived`: 被新方案替代，文首加归档说明并给出替代文档路径
-
-归档说明模板：
-```markdown
-> [!NOTE]
-> **归档文档** | 归档日期：YYYY-MM-DD
-> 本文档作为历史参考保留，不再主动维护。
-> 替代文档：<path>
-```
-
-### 6.6 最小同构要求
-- 每个 Active feature 至少有 1 个 design 文档 + 1 个 checklist
-- checklist 每项必须可验证，状态仅允许 `[ ]` / `[x]`
-- `.plan` 里的结论必须可回链到代码、测试或工件
-
-## 7. Skill Orchestration Contract (`syncdoc` + `pm-progress` + `drive-pm-closed-loop`)
-
-### 7.1 初始化阶段（项目或阶段启动）
-1. `syncdoc`
-- 目标：初始化/纠偏 `PROGRESS.md`、`MEMORY.md`、`NEXT_STEP.md` 与 `.plan` 模板结构
-- 输出：三核心文档骨架 + `.plan` 规范命名骨架
-
-2. `pm-progress-requirement-discovery`
-- 目标：从当前进度和未知项中冻结 Requirement v0
-- 输出：高优先级问题集 + Requirement Snapshot
-- 落盘建议：`.plan/{YYYYMMDD}_{feature}_requirement_v0.md`
-- 严禁输出实施步骤、架构迁移方案或任务拆分
-
-3. `drive-pm-closed-loop`
-- 目标：将已冻结的 Requirement v0 转为“单步最小可执行闭环”
-- 输出：Minimum Closed Loop + Verification Plan + Next Iteration Plan
-- 落盘建议：
-  - `.plan/{YYYYMMDD}_{feature}_closed_loop_v0.md`
-  - `.plan/checklist_{feature}_closed_loop_v0.md`
-- 若 Requirement 未冻结，必须退回 `pm-progress`
-
-4. `syncdoc`（回环）
-- 目标：把阶段结论同步回三核心文档
-- 同步规则：
-  - `PROGRESS.md`: 更新 Milestone、TODO/DONE、Reference List
-  - `MEMORY.md`: 沉淀本轮可复用经验（根因/修复/预防）
-  - `NEXT_STEP.md`: 写入唯一下一步执行指针
-
-### 7.2 交接字段（技能间必须对齐）
-- `feature_name`
-- `stage_name`
-- `acceptance_criteria`
-- `evidence_paths`
-- `p0_next`
-
-### 7.3 禁止漂移规则
-- 未经过 `pm-progress` 的需求冻结，不进入 `drive-pm-closed-loop` 执行阶段
-- 未经过 `drive` 形成最小闭环，不允许在 `PROGRESS` 中标记该阶段为 DONE
-- 未经过 `syncdoc` 回写，不算完成一次阶段闭环
-- 不允许把 `explorer` / `architect` / `reviewer` 的职责重新混入主代理默认流程
-
-## 7.4 Project-Local Codex Agents
-- `.codex/config.toml` 为当前项目的 multi-agent 入口
-- `.codex/agents/explorer.toml`：只读探索、执行路径梳理、证据收集
-- `.codex/agents/architect.toml`：边界、迁移、接口、兼容性设计
-- `.codex/agents/reviewer.toml`：correctness / regression / security / tests 审查
-- 角色选择与触发语义以 `AGENT_INDEX.md` 为准
-
-## 8. Change Control Rules
-- 范围冻结：阶段内发现新需求，默认进入下一阶段 backlog
-- 兼容优先：新能力默认开关关闭，不影响旧路径
-- 先确定性后智能化：先验证 pinned/固定路径，再优化检索/排序/策略
-- 禁止“看起来完成”：必须通过 AC 和证据工件验证
-
-## 9. Quality Gates
-执行交付前至少通过：
-- `npm run typecheck`
-- `npm run build`
-
-如失败：
-- 不得宣称完成
-- 必须给出失败点与修复计划
-
-## 10. Definition of Done
-仅当以下条件同时满足才算完成：
-- 需求与阶段 AC 满足
-- 质量门禁通过
-- 关键风险与兼容性说明清晰
-- `PROGRESS/MEMORY/NEXT_STEP` 已同步
-- checklist 状态与证据一致
-
-## 11. Handoff Format
-每次交付输出应包含：
-- 这轮完成了什么（按阶段）
-- 证据在哪里（文件路径/日志字段）
-- 还剩什么（下一阶段 P0-NEXT）
-- 下一步建议（1-3 条可执行动作）
-
-## 附录: 快速检查表
-
+## Quick Check
 每次编码前：
-```
-- 读取 PROGRESS.md 对齐当前目标
-- 读取 MEMORY.md 检查已知陷阱
-- 读取 NEXT_STEP 判断P0任务
-- 读取 AGENT_INDEX.md 判断角色与技能路由
-- 确认加载范围 (Fast Path vs Design Path)
+```text
+- 读取 PROGRESS.md
+- 读取 NEXT_STEP.md
+- 读取 MEMORY.md
+- 读取 AGENT_INDEX.md（项目根优先，共享兜底其次）
+- 加载 using-superpowers
+- 按路由进入对应 process skill
 ```
 
 每次编码后：
-```
-- 质量红线检查 (800/50/3/3)
-- 文档-代码同步检查
-- 上下文文件更新
+```text
+- 运行 review 与 verification
+- 对齐文档与证据
+- 更新 NEXT_STEP.md 为唯一下一步指针
 ```

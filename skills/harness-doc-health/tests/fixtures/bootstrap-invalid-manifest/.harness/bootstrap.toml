@@ -1,0 +1,7 @@
+bootstrap_version = "0.1.0"
+mode = "greenfield"
+preset = "none"
+templates_dir = "docs/superpowers/templates"
+docs_health_command = ""
+verify_command = ""
+e2e_command = ""
