@@ -11,7 +11,7 @@ if [[ ! -d "$TARGET_DIR" ]]; then
   exit 1
 fi
 
-MODE="$("$MODE_SCRIPT" "$TARGET_DIR")"
+MODE="$($MODE_SCRIPT "$TARGET_DIR")"
 if [[ "$MODE" != "greenfield" ]]; then
   echo "Refusing greenfield bootstrap for non-greenfield directory: $TARGET_DIR" >&2
   exit 1

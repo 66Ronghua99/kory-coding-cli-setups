@@ -1,148 +1,96 @@
 ---
-name: harness-doc-health
-description: >
-  使用 when 需要对仓库级文档进行健康检查：bootstrap 完整性、spec/plan/evidence
-  图谱关系、以及 spec -> plan -> evidence 的 stale truth 漂移。适用于编码前检查、文档回归扫描、
-  CI 阻断，以及 agent 交付前验证。
+name: harness:doc-health
+description: Use when a repository needs its source-of-truth documents checked for pointer drift, spec-plan-evidence drift, stale status, or mismatch between current progress and recorded next actions.
 ---
 
-# harness-doc-health
+# harness:doc-health
 
-仓库级文档健康检查工具。当前只维护三条正式 phase entrypoint：
+`harness:doc-health` is the golden standard for repository truth.
 
-- `--phase bootstrap`
-- `--phase graph`
-- `--phase drift`
+It does not ship a checker. It tells coding agents how to inspect whether the repository's governance docs, active specs, active plans, and recorded evidence still agree with each other.
 
-它们共同假设：仓库内文档是系统真源，检查器只读取显式结构，不做 prose 猜测。
+## When To Use
 
-## 快速使用
+Use this skill when:
 
-```bash
-# Phase 1: Bootstrap Health
-node ~/.coding-cli/skills/harness-doc-health/scripts/doc-health.js /path/to/repo --phase bootstrap
+- starting complex work and the current repository state might be stale
+- `PROGRESS.md`, `NEXT_STEP.md`, `MEMORY.md`, or `AGENT_INDEX.md` may be out of sync
+- an active spec, plan, or evidence file might no longer reflect the current implementation truth
+- a completion claim needs document evidence, not just command output
+- recurring document audits are needed to prevent drift
 
-# Phase 2: Document Graph Health
-node ~/.coding-cli/skills/harness-doc-health/scripts/doc-health.js /path/to/repo --phase graph
+Do not use this skill to define lint rules, test strategy, or runtime automation.
 
-# Phase 3: Execution Drift Health
-node ~/.coding-cli/skills/harness-doc-health/scripts/doc-health.js /path/to/repo --phase drift
+## Health Domains
 
-# 回归测试
-cd ~/.coding-cli/skills/harness-doc-health && npm test
-```
+### 1. Bootstrap Integrity
 
-## Phase 1: Bootstrap Health
+Confirm the repository has the minimum governance surface:
 
-检查仓库是否已经按 Harness bootstrap 成功。
+- root docs exist and have distinct roles
+- `.harness/bootstrap.toml` matches the active Harness model
+- document templates exist where the repo says they exist
 
-当前会检查：
+### 2. Pointer Consistency
 
-- `.harness/bootstrap.toml` 是否存在且字段完整
-- 根级治理文件是否齐全
-- `docs/superpowers/templates/` 是否完整
-- 模板必需 heading 是否存在
-- `AGENTS.md` / `AGENT_INDEX.md` 是否包含关键路由标记
+Confirm the top-level pointers agree:
 
-Phase 1 不做：
+- `PROGRESS.md` active milestone matches the live loop
+- `NEXT_STEP.md` names one direct next action only
+- `MEMORY.md` stores durable lessons, not transient task lists
+- `AGENT_INDEX.md` routes to the active skill taxonomy
 
-- 跨文档图谱推理
-- stale truth 漂移检测
-- 代码结构 lint
+### 3. Spec -> Plan -> Evidence Integrity
 
-## Phase 2: Document Graph Health
+Confirm the execution chain is explicit:
 
-检查 metadata-bearing 文档之间的显式关系是否成立。
+- active specs expose stable contracts and acceptance criteria
+- active plans implement an active spec and record execution truth
+- evidence files point back to the plan they verify
+- statuses (`draft`, `active`, `superseded`, `archived`) do not contradict each other
 
-当前最小模型：
+### 4. Drift And Freshness
 
-- 文档使用 YAML front matter
-- 只覆盖 `spec`、`plan`、`evidence`
-- 状态枚举：`draft | active | deprecated | superseded | archived`
-- 关系字段：`implements`、`verified_by`、`supersedes`、`related`
-- 所有关系字段使用仓库相对路径
+Confirm the recorded truth is still current:
 
-Phase 2 不做：
+- changes in frozen contracts are reflected in plan execution truth
+- changes in plan claims are reflected in verification evidence
+- completion claims have fresh, reviewable proof
 
-- prose 语义理解
-- contract drift
-- 代码层架构边界检查
+## Operating Model
 
-## Phase 3: Execution Drift Health
+1. Read `PROGRESS.md`, `NEXT_STEP.md`, `MEMORY.md`, and `AGENT_INDEX.md` first.
+2. Identify the active spec, active plan, and freshest evidence for the current loop.
+3. Compare pointers, statuses, and truth blocks using the references and templates in this skill.
+4. Fix the source-of-truth documents before continuing implementation.
+5. Record the audit result in repository evidence when the drift check matters to delivery.
 
-检查 `spec -> plan -> evidence` 之间的 stale truth，即图谱仍然合法，但执行或验证已经过期。
+## Expected Outputs
 
-当前模型：
+A good `harness:doc-health` run by an agent should produce some combination of:
 
-- `spec` 保持意图真相
-- `plan` 通过 `## Execution Truth` 保存执行真相
-- `evidence` 通过 `## Verified Claims` 保存验证真相
-- freshness 通过短 SHA-256 hash 检查
+- corrected pointer docs
+- corrected metadata or status transitions
+- refreshed `Execution Truth` or `Verified Claims` blocks
+- a short audit note or evidence file showing what drift was found and resolved
 
-Phase 3 v0 只支持两个 source section families：
+## Guardrails
 
-- `Frozen Contracts`
-- `Acceptance`
+- Do not pretend a prose-only judgment is machine-checkable.
+- Do not hide document policy inside helper scripts.
+- Do not mark work complete when evidence or pointer docs are stale.
+- Do not let archived or superseded docs continue acting as active truth.
+- Do not treat lint/test failures as doc-health findings; route those through `harness:lint-test-design` and the normal coding workflow.
 
-这些 source section 必须带显式 `drift_anchor`：
+## Reference Pack
 
-```md
-## Frozen Contracts
-<!-- drift_anchor: frozen_contracts -->
-
-## Acceptance
-<!-- drift_anchor: acceptance -->
-```
-
-`plan` 需要的 block 形状：
-
-```yaml
-schema: harness-execution-truth.v1
-claims:
-  - claim_id: plan.example.frozen-contracts
-    source_spec: docs/superpowers/specs/example-spec.md
-    source_anchor: frozen_contracts
-    source_hash: 0123456789ab
-```
-
-`evidence` 需要的 block 形状：
-
-```yaml
-schema: harness-verified-claims.v1
-verified_claims:
-  - claim_id: evidence.example.frozen-contracts
-    plan_path: docs/superpowers/plans/example-plan.md
-    plan_claim_id: plan.example.frozen-contracts
-    plan_hash: 0123456789ab
-    artifacts:
-      - artifacts/example/evidence.md
-```
-
-Phase 3 不做：
-
-- provider 直连、分层越界等代码级规则
-- 任意 prose 语义理解
-- 替代 TDD、集成测试或 E2E
-
-## 输出解释
-
-输出分三层：
-
-- `ERROR`
-  - 必须修复；命令会返回非零退出码
-- `WARNING`
-  - 当前不阻断，但代表 rollout gap、缺少 freshness 维护或需要补齐结构
-- `INFO`
-  - 仅提示
-
-CLI 输出括号中的第一段永远是源文档；后续键帮助 agent 快速定位：
-
-- Phase 1: `key` / `heading` / `marker`
-- Phase 2: `field` / `target`
-- Phase 3: `claim_id` / `plan_claim_id` / `anchor` / `target`
-
-## 边界
-
-- 需要 lint、pytest、结构测试解决的问题，不要塞进 `harness-doc-health`
-- 需要 prose 理解的问题，不要伪装成机器可检规则
-- 只有显式结构化的仓库真相，才应该进入 phase checker
+- `references/health-model.md`
+- `references/pointer-consistency.md`
+- `references/spec-plan-evidence-drift.md`
+- `references/status-lifecycle.md`
+- `templates/spec-and-plan-truth.template.md`
+- `templates/evidence-verified-claims.template.md`
+- `checklists/pre-implementation-doc-audit.md`
+- `checklists/pre-delivery-doc-audit.md`
+- `examples/healthy-doc-chain.md`
+- `examples/pointer-drift.md`

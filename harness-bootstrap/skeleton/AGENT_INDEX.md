@@ -10,9 +10,10 @@
    - implementation in this session -> `executing-plans` or `subagent-driven-development`
    - feature or bugfix coding -> `test-driven-development`
    - runtime failure or regression -> `systematic-debugging`
+   - repository truth, pointer drift, or stale spec/plan/evidence links -> `harness:doc-health`
+   - code invariant, lint boundary, or test-boundary design -> `harness:lint-test-design`
    - delivery review -> `requesting-code-review`
    - completion claim -> `verification-before-completion`
-   - documentation drift or contract sync -> `harness-doc-health`
 
 ## Bootstrap Rule
 

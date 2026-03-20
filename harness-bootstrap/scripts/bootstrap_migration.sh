@@ -50,21 +50,9 @@ if [[ ! -f "$state_file" ]]; then
       fi
     done
     echo
-    echo "## Existing Command Hints"
-    if [[ -f "$TARGET_DIR/package.json" ]]; then
-      if command -v rg >/dev/null 2>&1; then
-        rg --no-filename '"(lint|test|build|typecheck|verify|test:e2e)"\s*:' "$TARGET_DIR/package.json" \
-          | sed -E 's/.*"([^"]+)".*/- \1/' || true
-      else
-        echo "- package.json detected; inspect scripts manually"
-      fi
-    else
-      echo "- No package.json-based command hints detected"
-    fi
-    echo
     echo "## Follow-Up"
-    echo "- Review existing commands and fill any remaining verify/e2e placeholders in .harness/bootstrap.toml"
-    echo "- Confirm whether any repository-local docs should override skeleton defaults"
+    echo "- Review repository topology and update architecture/testing docs where skeleton defaults are too generic"
+    echo "- Use Superpowers to write the first approved migration spec before code changes"
   } > "$state_file"
 fi
 

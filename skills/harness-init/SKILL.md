@@ -1,38 +1,40 @@
 ---
 name: harness:init
-description: Initialize a repository into the local Harness workflow using one entrypoint, a local bootstrap pack, and greenfield or migration mode depending on the current directory.
+description: Use when entering a repository that needs the Harness governance baseline, project indexes, bootstrap manifest, and templates before design or implementation work begins.
 ---
 
 # harness:init
 
-Use the local bootstrap pack to bring a repository into the same Harness workflow, regardless of whether the target is brand new or already contains code.
+Bootstrap a repository into the governance-only Harness model.
+
+`harness:init` is the only Harness skill that remains executable. Its job is infrastructure setup only: establish the repository map, project context docs, bootstrap manifest, and Superpowers templates. It must not copy or vendor non-init Harness runtimes into the target repository.
 
 ## Entry Model
 
-`harness:init` is the single user-facing entrypoint.
+`harness:init` is the single user-facing bootstrap entrypoint.
 
 It should:
 
 1. detect whether the target directory is `greenfield` or `migration`
-2. load the local bootstrap pack from `~/.coding-cli/harness-bootstrap`
+2. load the local bootstrap pack from `$HARNESS_CLI_HOME/harness-bootstrap` (fallback: `$CODEX_HOME/harness-bootstrap`, then `$HOME/.coding-cli/harness-bootstrap`)
 3. apply the correct bootstrap script
 4. materialize `.harness/bootstrap.toml`
-5. stop on a clear next action
+5. leave `NEXT_STEP.md` pointing at spec creation through Superpowers
 
 The intended user instruction is always:
 
 - `Use harness:init to initialize this project`
 
-## Local Asset Source
+## What Bootstrap Creates
 
-Use these local paths:
+After bootstrap, the repository should have:
 
-- Pack root: `/Users/cory/.coding-cli/harness-bootstrap`
-- Detection script: `/Users/cory/.coding-cli/harness-bootstrap/scripts/detect_project_mode.sh`
-- Greenfield script: `/Users/cory/.coding-cli/harness-bootstrap/scripts/bootstrap_greenfield.sh`
-- Migration script: `/Users/cory/.coding-cli/harness-bootstrap/scripts/bootstrap_migration.sh`
-- Preset script: `/Users/cory/.coding-cli/harness-bootstrap/scripts/apply_preset.sh`
-- Validation script: `/Users/cory/.coding-cli/harness-bootstrap/scripts/validate_bootstrap.sh`
+- root governance docs: `AGENTS.md`, `AGENT_INDEX.md`, `PROGRESS.md`, `MEMORY.md`, `NEXT_STEP.md`
+- bootstrap manifest: `.harness/bootstrap.toml`
+- project context docs under `docs/project/`, `docs/architecture/`, and `docs/testing/`
+- Superpowers templates under `docs/superpowers/templates/`
+
+Bootstrap standardizes repository structure. It does not claim that the repository already has runnable doc-health, lint, or test gates.
 
 ## Mode Selection
 
@@ -44,7 +46,7 @@ Expected result:
 
 - governance skeleton copied into the repository
 - `.harness/bootstrap.toml` created from the example
-- template directory available under `docs/superpowers/templates/`
+- templates available under `docs/superpowers/templates/`
 - `NEXT_STEP.md` points to spec creation
 
 ### Migration
@@ -60,40 +62,23 @@ Expected result:
 
 Migration is additive by default, not destructive.
 
-## Required Repository Assets
-
-After bootstrap, these files should exist:
-
-- `AGENTS.md`
-- `AGENT_INDEX.md`
-- `PROGRESS.md`
-- `MEMORY.md`
-- `NEXT_STEP.md`
-- `.harness/bootstrap.toml`
-- `docs/project/README.md`
-- `docs/architecture/overview.md`
-- `docs/architecture/layers.md`
-- `docs/testing/strategy.md`
-- `docs/superpowers/templates/SPEC_TEMPLATE.md`
-- `docs/superpowers/templates/PLAN_TEMPLATE.md`
-- `docs/superpowers/templates/CHANGE_REQUEST_TEMPLATE.md`
-- `docs/superpowers/templates/EVIDENCE_TEMPLATE.md`
-
 ## Manifest Rule
 
 If `.harness/bootstrap.toml` exists, treat it as the bootstrap source of truth for:
 
 - mode
 - preset
+- governance model
 - templates directory
-- docs health command
-- verification command
-- e2e command
+- active governance skills
 
-Default values for the first version:
+Default values for the current model:
 
 - `preset = "none"`
 - `entry_skill = "harness:init"`
+- `governance_model = "harness-governance-only.v1"`
+- `doc_health_skill = "harness:doc-health"`
+- `lint_test_skill = "harness:lint-test-design"`
 
 The `mode` should be set from detection, not guessed from chat.
 
@@ -101,24 +86,30 @@ The `mode` should be set from detection, not guessed from chat.
 
 After bootstrap:
 
-- `brainstorming` should create specs from `docs/superpowers/templates/SPEC_TEMPLATE.md`
-- `writing-plans` should create plans from `docs/superpowers/templates/PLAN_TEMPLATE.md`
-- scope changes should be classified through `docs/superpowers/templates/CHANGE_REQUEST_TEMPLATE.md`
-- delivery evidence should use `docs/superpowers/templates/EVIDENCE_TEMPLATE.md`
+- `brainstorming` creates specs from `docs/superpowers/templates/SPEC_TEMPLATE.md`
+- `writing-plans` creates plans from `docs/superpowers/templates/PLAN_TEMPLATE.md`
+- scope changes use `docs/superpowers/templates/CHANGE_REQUEST_TEMPLATE.md`
+- delivery evidence uses `docs/superpowers/templates/EVIDENCE_TEMPLATE.md`
+- `harness:doc-health` and `harness:lint-test-design` provide the governance standards agents must read during those workflows
 
-`harness:init` does not replace the normal Superpowers workflow. It standardizes the repository starting point and artifact layout.
+`harness:init` does not replace Superpowers. It only prepares the repository so Superpowers can run against a stable, documented baseline.
 
 ## Guardrails
 
 - Do not guess the repository mode if the detection script can answer it.
 - Do not invent stack presets. Default to `none` unless a real preset exists.
 - Do not overwrite product code during migration.
+- Do not vendor non-init Harness skills into any repository-local runtime directory.
+- Do not leave placeholder execution commands in the manifest that imply automation which no longer exists.
 - Do not stop at file creation only; leave a clear next action in `NEXT_STEP.md`.
-- Do not rely on chat memory when the bootstrap manifest or repository docs already describe the setup.
+- Do not bake machine-specific absolute paths into scripts or generated project docs.
 
-## Success Criteria
+## Reference Pack
 
-- one skill invocation can initialize a brand-new repository
-- one skill invocation can sync a legacy repository into the Harness workflow
-- future agents can read `.harness/bootstrap.toml` instead of inferring setup details
-- bootstrapped repositories continue naturally into spec, plan, implementation, and verification
+- `references/bootstrap-manifest-spec.md`
+- `references/repository-minimum.md`
+- `references/superpowers-integration-map.md`
+- `checklists/greenfield-bootstrap.md`
+- `checklists/migration-bootstrap.md`
+- `examples/greenfield-after.md`
+- `examples/migration-after.md`

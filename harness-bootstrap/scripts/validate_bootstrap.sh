@@ -29,6 +29,53 @@ for rel_path in "${required_paths[@]}"; do
   fi
 done
 
+required_manifest_keys=(
+  'bootstrap_version = '
+  'mode = '
+  'preset = '
+  'entry_skill = '
+  'governance_model = '
+  'templates_dir = '
+  'doc_health_skill = '
+  'lint_test_skill = '
+)
+
+manifest_path="$TARGET_DIR/.harness/bootstrap.toml"
+if [[ -f "$manifest_path" ]]; then
+  for key in "${required_manifest_keys[@]}"; do
+    if ! grep -F "$key" "$manifest_path" >/dev/null 2>&1; then
+      echo "manifest-key-missing: $key" >&2
+      missing=1
+    fi
+  done
+fi
+
+no_absolute_path_files=(
+  "AGENTS.md"
+  "AGENT_INDEX.md"
+  "NEXT_STEP.md"
+  ".harness/bootstrap.toml"
+)
+
+for rel_path in "${no_absolute_path_files[@]}"; do
+  file_path="$TARGET_DIR/$rel_path"
+  if [[ ! -f "$file_path" ]]; then
+    continue
+  fi
+
+  if command -v rg >/dev/null 2>&1; then
+    if rg -n '/Users/' "$file_path" >/dev/null 2>&1; then
+      echo "absolute-path: $rel_path contains '/Users/'" >&2
+      missing=1
+    fi
+  else
+    if grep -n '/Users/' "$file_path" >/dev/null 2>&1; then
+      echo "absolute-path: $rel_path contains '/Users/'" >&2
+      missing=1
+    fi
+  fi
+done
+
 if [[ "$missing" -ne 0 ]]; then
   exit 1
 fi
