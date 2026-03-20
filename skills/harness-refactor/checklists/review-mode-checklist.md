@@ -1,0 +1,20 @@
+# Review Mode Checklist
+
+- [ ] Confirm the required inputs exist: active diff, caller hotspot or ownership context, and any touched entrypoints, adapters, or public API surfaces.
+- [ ] Start from the active diff. If the review begins from a vague intuition or a repository sweep, stop and re-bound the input.
+- [ ] Expand only into bounded hotspots needed to judge architectural impact:
+  - directly changed files
+  - adjacent boundary files
+  - touched entrypoints, adapters, public APIs, or workflow surfaces linked to the diff
+- [ ] Do not turn `review mode` into a subsystem audit. If more than the bounded hotspot is needed, say the work should move to `governance mode`.
+- [ ] Rank findings with `P0` to `P3` based on architecture impact, not taste:
+  - boundary collapse or unsafe coupling
+  - workflow ownership blur
+  - adapter leakage
+  - abstraction depth that hides control flow from future agents
+- [ ] For each finding, make the affected boundary explicit and explain why lint or tests may still pass while the architecture drifts.
+- [ ] Give merge guidance for the current change: acceptable as-is, acceptable with focused follow-up, should be narrowed, or unsafe without containment.
+- [ ] Reassert the advisory-first boundary: this shared skill reports architecture risk, but merge policy and blocking policy stay repository-local.
+- [ ] If any `P0` or `P1` finding is not fixed in the current change, record an explicit defer rationale with owner, containment, risk window, and next action.
+- [ ] Route stale architecture truth to `harness:doc-health` instead of treating documentation drift as a refactor fix.
+- [ ] Escalate repeated findings into `harness:lint-test-design` when the same enforceable boundary keeps failing review and can be encoded as a repository-local lint or structural test invariant.
