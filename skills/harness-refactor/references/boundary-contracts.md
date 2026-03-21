@@ -11,6 +11,7 @@
 ## Required Routing Rules
 
 - If a refactor review finds stale, missing, or contradictory architecture truth, route that follow-up back through `harness:doc-health` rather than resolving it as an inline documentation audit.
+- If the repository cannot state its layer model, folder roles, or allowed boundary crossings, report that missing model explicitly instead of guessing one.
 - If repeated architecture findings should become enforceable hard gates, route that follow-up into `harness:lint-test-design` rather than inventing lint/test policy here.
 - If the problem is still primarily about architecture drift in code or workflow shape, keep it inside `harness:refactor` even when docs and lint/test surfaces already exist.
 

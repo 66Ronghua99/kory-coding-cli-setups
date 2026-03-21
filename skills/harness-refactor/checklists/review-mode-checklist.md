@@ -2,6 +2,7 @@
 
 - [ ] Confirm the required inputs exist: active diff, caller hotspot or ownership context, and any touched entrypoints, adapters, or public API surfaces.
 - [ ] Start from the active diff. If the review begins from a vague intuition or a repository sweep, stop and re-bound the input.
+- [ ] Check whether the repo already defines the relevant layer model, folder roles, or allowed edges. If not, report that missing model explicitly instead of guessing one.
 - [ ] Expand only into bounded hotspots needed to judge architectural impact:
   - directly changed files
   - adjacent boundary files
@@ -13,6 +14,7 @@
   - adapter leakage
   - abstraction depth that hides control flow from future agents
 - [ ] For each finding, make the affected boundary explicit and explain why lint or tests may still pass while the architecture drifts.
+- [ ] Call out folder-placement drift when file location no longer matches responsibility, even if the code still works.
 - [ ] Give merge guidance for the current change: acceptable as-is, acceptable with focused follow-up, should be narrowed, or unsafe without containment.
 - [ ] Reassert the advisory-first boundary: this shared skill reports architecture risk, but merge policy and blocking policy stay repository-local.
 - [ ] If any `P0` or `P1` finding is not fixed in the current change, record an explicit defer rationale with owner, containment, risk window, and next action.

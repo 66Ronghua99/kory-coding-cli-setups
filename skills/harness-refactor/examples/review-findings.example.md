@@ -13,12 +13,12 @@ Finding 1
 
 Finding 2
 
-- Title: Retry helper now owns trace persistence
+- Title: Workflow classifier was added under `shared/utils/` instead of the runtime boundary
 - Severity: `P2`
-- Affected boundary: core retry logic -> observability sink
-- Why lint/test may still pass: retries still succeed and traces still write, so behavior checks pass even while a reusable helper takes on workflow-specific side effects.
-- Suggested focused follow-up: inject a trace event hook at the workflow edge and keep retry logic transport-agnostic.
-- Route to `harness:lint-test-design`: No, not yet. Fix the hotspot first and only harden it if the same side-effect leak keeps recurring.
+- Affected boundary: folder placement -> workflow ownership
+- Why lint/test may still pass: the classifier still returns correct results, but its location now invites unrelated callers and hides that it depends on runtime-only concepts.
+- Suggested focused follow-up: move the classifier into the runtime-owned module that defines workflow state and keep `shared/utils/` for genuinely cross-cutting helpers only.
+- Route to `harness:lint-test-design`: Yes, if this is a repeated pattern. Add a file-classification invariant or import rule so workflow-owned modules cannot accumulate under generic shared folders.
 
 Merge guidance: acceptable only with focused follow-up or scope narrowing. Do not widen this PR into a broader cleanup.
 
@@ -26,4 +26,4 @@ Advisory-first note: this finding set is not the merge authority. Repository-loc
 
 Defer rationale if the `P1` issue is not fixed now: record the owner, the temporary containment choice, the reason merge risk is acceptable, and the exact follow-up path into either the next PR or a tracked refactor item.
 
-Required `harness:doc-health` follow-up: Yes, if the current subsystem notes or testing docs still say provider payload normalization ends at the adapter boundary. Keep that stale architecture truth fix separate from the refactor finding itself.
+Required `harness:doc-health` follow-up: Yes, if the current subsystem notes or testing docs still say provider payload normalization ends at the adapter boundary, or if folder-role guidance still claims workflow classifiers never live under generic shared directories. Keep that stale architecture truth fix separate from the refactor finding itself.

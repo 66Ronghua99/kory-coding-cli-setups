@@ -4,7 +4,7 @@ These principles define what `harness:refactor` is evaluating when it reviews ar
 
 ## 1. Agent Legibility First
 
-Prefer structures that future coding agents can locate, parse, and modify safely without hidden chat context. If the repository shape, ownership split, or control flow is hard to reconstruct from files alone, legibility has already started to drift.
+Prefer structures that future coding agents can locate, parse, and modify safely without hidden chat context. If the repository shape, folder roles, ownership split, or control flow is hard to reconstruct from files alone, legibility has already started to drift.
 
 ## 2. Workflow Is Architecture
 
@@ -18,6 +18,10 @@ Tool outputs, retrieved context, runtime inputs, and other external shapes shoul
 
 Prefer explicit, shallow abstractions that are easy to inspect in-repo. Avoid clever indirection, deep wrapper stacks, or helper layers that make ownership and data flow harder for future agents to follow.
 
-## 5. Small Continuous Cleanup Over Heroic Rewrites
+## 5. Folder Placement Is Part Of The Contract
+
+Directory placement is not cosmetic when it communicates file role. If a file's location no longer matches its responsibility, that is architecture drift even when behavior stays green.
+
+## 6. Small Continuous Cleanup Over Heroic Rewrites
 
 Default to small, reviewable cleanup that steadily improves boundaries and readability. Use broader cleanup only when the repository explicitly chooses `governance mode` because the drift is already beyond what bounded review comments can unwind.

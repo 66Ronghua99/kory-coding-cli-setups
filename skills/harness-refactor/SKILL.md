@@ -1,138 +1,78 @@
 ---
 name: harness:refactor
-description: Use when PR review, merge-to-main review, or governance cleanup needs architecture-drift guidance for agent-system workflow surfaces, boundary leaks, abstraction collapse, or recurring refactor hotspots that lint and tests do not fully explain.
+description: Use when architecture drift, readability decay, or recurring cleanup hotspots need targeted refactor guidance that docs and hard gates do not fully cover.
 ---
 
 # harness:refactor
 
-`harness:refactor` is the golden standard for architecture drift findings and refactor guidance.
+`harness:refactor` is for architecture drift that still exists after docs and hard gates.
 
-It does not ship a checker, runtime, or code rewrite engine. It tells coding agents how to inspect architecture drift, report severity-ranked findings, and recommend focused cleanup without collapsing document truth, lint/test design, and repository-local automation into one pass.
-
-## Default Execution Mode
-
-Run `harness:refactor` in a background subagent by default.
-
-The main session should dispatch the review, keep working on non-overlapping critical-path tasks, and integrate the findings when they are needed. Do not run the full refactor audit inline in the main session unless the user explicitly forbids subagents or the environment cannot run them.
-
-## Modes
-
-### Review Mode
-
-Use `review mode` at PR review or merge-to-main boundaries.
-
-Required Inputs:
-
-- active diff
-- any known hotspot, boundary, or ownership context from the caller
-- any known touched entrypoints, adapters, or public API surfaces
-
-Start from the active diff, then expand only into bounded hotspots needed to judge architectural impact:
-
-- directly affected modules
-- adjacent boundary files
-- touched entrypoints, adapters, or public API surfaces
-- workflow surfaces linked to the diff, including tools, knowledge, handoffs, traces, or evaluation loops
-
-`review mode` is diff-first and bounded. It must not degrade into an unbounded repository sweep.
-
-### Governance Mode
-
-Use `governance mode` for explicit cleanup work or when recurring drift shows that a narrow diff review is no longer enough.
-
-Required Inputs:
-
-- declared subsystem or target scope
-- hotspot directories, modules, or workflow surfaces to inspect
-- recurring findings, cleanup goal, or review history that explains why broader scanning is warranted
-
-Start from a declared subsystem, hotspot directory, or repeated finding pattern. `governance mode` may scan the broader architecture surface because it is an intentional cleanup pass, but it must still stay scoped, prioritized, and repository-readable.
-
-If the caller cannot provide the required inputs, stop and ask for bounded context instead of replacing it with an unbounded scan.
+OpenAI's Harness model treats refactoring like garbage collection: small, repeated cleanup that keeps the codebase legible for future agent runs. This skill scopes those cleanups without replacing doc-health or lint/test design.
 
 ## When To Use
 
 Use this skill when:
 
-- PR review needs architecture drift findings, not only style comments
-- merge-to-main review needs severity-ranked refactor guidance
-- lint and tests still pass while workflow or ownership boundaries are collapsing
-- agent-system architecture is becoming harder to read across tools, knowledge, handoffs, traces, or evaluation loops
-- a subsystem needs a broader governance cleanup instead of another isolated comment thread
-- repeated review findings suggest repository-local refactor planning or future hard gates may be needed
+- a PR or merge review needs architecture findings, not style feedback
+- files or modules are collapsing across responsibilities even though tests still pass
+- folder structure, layer placement, or ownership boundaries are becoming hard to read
+- repeated cleanup hotspots suggest a targeted refactor pass
+- a subsystem needs a bounded cleanup map before more work lands
 
-Do not use this skill for repository truth audits, pointer consistency, spec-plan-evidence freshness, or lint/test invariant design.
+Do not use this skill for stale repo docs or for deciding new hard gates without a concrete enforcement follow-up.
 
-## Architecture Lens
+## Core Lens
 
-Optimize for agent legibility first.
+Optimize for agent legibility.
 
-In agent systems, workflow is architecture. Review for whether models, tools, knowledge access, handoffs, traces, and evaluation loops remain explicit enough that a future coding agent can locate the boundary, understand the control flow, and change it safely.
+Ask whether a future agent can:
 
-Flag architecture findings such as:
+- find the right folder or layer without guessing
+- understand each file's role from its location and dependencies
+- see where external shapes are validated
+- modify one concern without touching three unrelated ones
+- tell whether the real fix is refactor, docs repair, or a new hard gate
 
-- abstraction collapse or multi-responsibility files
-- boundary leaks between workflow, orchestration, knowledge access, and core logic
-- external shapes parsed too late or guessed deep inside business logic
-- opaque or overly deep abstractions that future agents cannot reliably internalize
-- repeated cleanup hotspots that keep reappearing because they are still folklore instead of repository truth or hard gates
+## Working Shape
+
+1. Start from a diff or declared hotspot, not a full-repo sweep.
+2. Trace the smallest set of files needed to judge the boundary.
+3. Report severity-ranked findings with concrete refactor targets.
+4. Say whether the issue should be fixed in code now, deferred, routed to `harness:doc-health`, or promoted to `harness:lint-test-design`.
+5. When the same issue keeps recurring, recommend a recurring cleanup or targeted refactor PR shape.
+
+If the repo does not define a clear layer or folder model, report that missing model explicitly instead of guessing one.
+
+## Common Findings
+
+- multi-responsibility files that blur domain layers
+- folder placement that no longer matches file responsibility
+- boundary validation happening too deep in the stack
+- cross-cutting concerns leaking past their intended entrypoints
+- repeated helper proliferation where shared utilities should exist
+- abstractions that hide control flow instead of clarifying it
 
 ## Severity
 
-Use one severity ladder across both modes:
-
-- `P0`: architecture break or unsafe boundary collapse that needs immediate containment; high severity
-- `P1`: serious drift that materially harms maintainability or agent legibility; high severity
-- `P2`: meaningful cleanup target that should be scheduled but does not require immediate containment
+- `P0`: unsafe boundary collapse or architecture break
+- `P1`: serious drift that materially harms legibility or maintainability
+- `P2`: worthwhile cleanup target that should be scheduled
 - `P3`: localized improvement or watchlist note
 
-When this skill says severity-ranked findings, it means `P0` through `P3`. The defer-rationale rule applies to `P0` and `P1`.
+## Required Output
 
-## Required Outputs
-
-### Review Mode Output
-
-A `review mode` run should return:
-
-1. findings summary with severity, file paths, and line references when available
-2. merge guidance stating whether the change is acceptable as-is, should be narrowed, or needs focused refactor follow-up
-3. bounded follow-up suggestions for the affected hotspots only
-4. explicit defer rationale when high-severity findings are not fixed immediately
-
-### Governance Mode Output
-
-A `governance mode` run should return:
-
-1. architecture debt map grouped by pattern or subsystem
-2. prioritized refactor targets with rationale
-3. suggested sequencing for cleanup work
-4. a recommendation on whether a repository-local refactor plan artifact is warranted
-5. follow-up routing when stale docs or enforceable invariants are discovered
-
-## Advisory-First Policy
-
-This shared skill is advisory-first.
-
-High-severity findings may require an explicit defer rationale, but blocking merge policy, CI policy, PR policy, and escalation mechanics remain repository-local decisions.
-
-## Boundary And Automation Rules
-
-- repository-local `.workflow`, CI, merge, or PR automation stays outside the shared skill
-- `harness:doc-health` owns repository truth, pointer consistency, and stale architecture docs
-- `harness:lint-test-design` owns lint/test invariant design when repeated findings should become hard gates
-- `harness:refactor` owns architecture drift findings and refactor guidance that remain even when docs and hard gates nominally exist
-
-If review finds stale architecture truth, route the repair through `harness:doc-health` instead of silently treating it as resolved here. If repeated findings should become enforceable boundaries, route that follow-up into `harness:lint-test-design`.
+- findings summary with severity, file paths, and line references when available
+- bounded cleanup guidance for the affected hotspot
+- defer rationale for any `P0` or `P1` not fixed now
+- recommendation on whether to route follow-up into docs, hard gates, or recurring cleanup
 
 ## Guardrails
 
-- Do not run the full audit inline when a background subagent can do it.
-- Do not treat taste disagreements or formatting nits as architecture findings.
-- Do not let `review mode` turn into unbounded scanning.
-- Do not let `governance mode` collapse into vague "cleanup everything" advice.
-- Do not merge document consistency work into this skill; route stale truth through `harness:doc-health`.
-- Do not merge lint/test hardgate design into this skill; route enforceable follow-up through `harness:lint-test-design`.
-- Do not use this skill to hide repository-local automation policy inside a shared governance pack.
+- Do not turn this into an unbounded repo sweep by default.
+- Do not report formatting nits or taste-only comments as refactor findings.
+- Do not keep repeating the same advice if the real need is a lint or structural test.
+- Do not repair stale source-of-truth docs here; route them through `harness:doc-health`.
+- Do not hide enforcement design here; route encodeable rules through `harness:lint-test-design`.
 
 ## Reference Pack
 
