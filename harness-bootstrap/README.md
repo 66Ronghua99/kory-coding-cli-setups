@@ -28,3 +28,7 @@ This pack keeps repository bootstrap consistent across greenfield and migration 
 - Template usage is enforced at the repository level, not by chat memory.
 - The bootstrap manifest describes structure and active governance skills, not executable runtime commands.
 - Runtime source resolution defaults to `$HARNESS_CLI_HOME`, then `$CODEX_HOME`, then `$HOME/.coding-cli`.
+- Repositories may declare a local commit-time `harness:refactor` gate in `.harness/bootstrap.toml`.
+- The shared `harness:refactor` skill remains governance-only; local hooks only validate fresh gate evidence for the current staged snapshot.
+- Skeleton assets may include `.githooks/` and `.gitignore` examples for local refactor-gate enforcement.
+- Reusable installer ownership for local hooks is still deferred and may later move into `harness:develop`.

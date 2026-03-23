@@ -1,8 +1,10 @@
 # Review Mode Checklist
 
 - [ ] Confirm the required inputs exist: active diff, caller hotspot or ownership context, and any touched entrypoints, adapters, or public API surfaces.
+- [ ] If repository metadata declares commit-time review, confirm the staged files actually match the configured trigger paths and review the staged snapshot rather than unstaged local edits.
 - [ ] Start from the active diff. If the review begins from a vague intuition or a repository sweep, stop and re-bound the input.
 - [ ] Check whether the repo already defines the relevant layer model, folder roles, or allowed edges. If not, report that missing model explicitly instead of guessing one.
+- [ ] Check whether file paths, filenames, suffixes, and shared-folder semantics still describe responsibility honestly. Report path-semantics drift explicitly.
 - [ ] Expand only into bounded hotspots needed to judge architectural impact:
   - directly changed files
   - adjacent boundary files
@@ -14,9 +16,13 @@
   - adapter leakage
   - abstraction depth that hides control flow from future agents
 - [ ] For each finding, make the affected boundary explicit and explain why lint or tests may still pass while the architecture drifts.
+- [ ] For each finding, say whether the main follow-up shape is `rename`, `move`, `split`, `boundary test`, or `hardgate candidate`.
 - [ ] Call out folder-placement drift when file location no longer matches responsibility, even if the code still works.
+- [ ] Call out filename drift when the file path or name now misleads a future agent about the file's role.
 - [ ] Give merge guidance for the current change: acceptable as-is, acceptable with focused follow-up, should be narrowed, or unsafe without containment.
+- [ ] If this review is acting as a commit-time gate, end with a clear `pass` or `must_refactor` judgment for the current staged snapshot.
 - [ ] Reassert the advisory-first boundary: this shared skill reports architecture risk, but merge policy and blocking policy stay repository-local.
 - [ ] If any `P0` or `P1` finding is not fixed in the current change, record an explicit defer rationale with owner, containment, risk window, and next action.
+- [ ] State what proof should accompany any high-severity cleanup, such as boundary tests, structural tests, or tighter changed-code coverage.
 - [ ] Route stale architecture truth to `harness:doc-health` instead of treating documentation drift as a refactor fix.
-- [ ] Escalate repeated findings into `harness:lint-test-design` when the same enforceable boundary keeps failing review and can be encoded as a repository-local lint or structural test invariant.
+- [ ] Escalate findings into `harness:lint-test-design` when the boundary can already be encoded as a repository-local lint, structural test, naming rule, or coverage rule. Repetition strengthens the case but is not required.

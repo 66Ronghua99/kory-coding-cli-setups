@@ -2,8 +2,9 @@
 
 ## Boundary Model
 
-- Declared layer or folder rule:
-- Allowed edge or placement:
+- Target-state owner or edge:
+- Current truth:
+- Phase or rollout state:
 
 ## Valid Fixture
 
@@ -17,5 +18,7 @@
 
 ## Evidence Expectation
 
-- What output demonstrates the invariant is working:
-- What remediation the failure should suggest:
+- Command or test target:
+- Expected failing signal:
+- Expected remediation guidance:
+- Exception ledger reference if transitional:

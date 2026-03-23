@@ -1,5 +1,5 @@
 bootstrap_version = "0.2.0"
-mode = "greenfield"
+mode = "migration"
 preset = "none"
 entry_skill = "harness:init"
 governance_model = "harness-governance-only.v1"
@@ -10,7 +10,7 @@ lint_test_skill = "harness:lint-test-design"
 [governance.refactor_gate]
 enabled = false
 trigger = "commit"
-mode = "review"
+mode = "migration"
 subagent_first = true
 path_rules = []
 artifact_dir = "superpowers/artifacts/refactor-gate"

@@ -1,20 +1,22 @@
 # Layered Boundaries Example
 
-Canonical model:
+Canonical target model:
 
-- `domain/` defines business rules and cannot import `infrastructure/`
-- `application/` may orchestrate `domain/` and depend on declared ports
-- `infrastructure/` implements ports and adapters
-- `interfaces/` owns transport or UI entrypoints only
+- `application/shell/` is the only top-level concrete assembly owner
+- workflow modules under `application/` own semantics but do not freely assemble infrastructure
+- `kernel/` is engine-only and must not absorb product-domain or infrastructure concerns
+- `infrastructure/` implements contracts but does not own workflow semantics
 
 Example invariant split:
 
-- lint blocks `domain/` -> `infrastructure/` reverse imports
-- lint blocks adapter files from living outside `infrastructure/`
-- structural test proves no deep imports bypass the public API surface
-- structural test proves files under `interfaces/` do not become shared utility sinks
-- integration test proves the public entrypoint still composes correctly
+- lint blocks `kernel -> domain` and `kernel -> infrastructure`
+- lint blocks non-shell `application/* -> infrastructure/*`
+- lint blocks ambiguous buckets such as revived `runtime/`, `shared/`, or `helpers/`
+- structural test proves only one composition root assembles concrete adapters
+- structural test proves only one lifecycle owner controls workflow execution
+- regression test proves a direct-call path stays hook-free while the adapter path still runs hooks
 
-Escalation rule:
+Transition governance:
 
-- if reviewers repeatedly say "this file is in the wrong folder" or "runtime should not import this layer directly," that is a hardgate candidate, not just a style note
+- if current code truth still requires one temporary edge, record it as an exception ledger entry with owner, scope, target phase, and removal trigger
+- do not widen the permanent architecture model just because one transitional edge still exists

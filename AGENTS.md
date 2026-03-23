@@ -16,6 +16,7 @@ PROGRESS.md
 NEXT_STEP.md
 MEMORY.md
 AGENT_INDEX.md（项目根优先，兜底为 /Users/cory/.coding-cli/AGENT_INDEX.md）
+.harness/bootstrap.toml（若存在）
 ```
 
 - 若项目缺少根级 `AGENTS.md`，先补最小版本再继续。
@@ -25,7 +26,9 @@ AGENT_INDEX.md（项目根优先，兜底为 /Users/cory/.coding-cli/AGENT_INDEX
 ### 1.2 Superpowers Skill Set 为默认执行入口
 - 每次代码工程对话默认先进入 `using-superpowers`。
 - 只要存在匹配 skill，就必须走该 skill，不允许用临时流程替代。
+- `Superpowers` 负责流程执行，`Harness` 负责仓库治理标准、文档真相、lint/test invariant 与 architecture drift 治理。
 - 常用路由如下：
+  - 项目初始化或仓库 bootstrap：`harness:init`
   - 新功能、行为变化、工作流变化：`brainstorming`
   - Bug、回归、测试失败、异常行为：`systematic-debugging`
   - 已批准 spec 或已冻结需求进入实施拆解：`writing-plans`
@@ -33,6 +36,9 @@ AGENT_INDEX.md（项目根优先，兜底为 /Users/cory/.coding-cli/AGENT_INDEX
   - 在支持 subagent 的环境执行计划：`subagent-driven-development`
   - 不走 subagent 模式但已有书面计划：`executing-plans`
   - 任意 feature / bugfix 代码实现：`test-driven-development`
+  - 仓库真相、指针漂移、spec/plan/evidence 脱节：`harness:doc-health`
+  - lint/test invariant、结构硬约束、可机械化复发问题：`harness:lint-test-design`
+  - 架构漂移、边界坍塌、主动式重构治理：`harness:refactor`
   - 任务边界或交付前审查：`requesting-code-review`
   - 任何“完成 / 修复 / 通过”声明前：`verification-before-completion`
   - 分支或工作区收尾：`finishing-a-development-branch`
@@ -53,6 +59,7 @@ AGENT_INDEX.md（项目根优先，兜底为 /Users/cory/.coding-cli/AGENT_INDEX
 - `PROGRESS.md`：当前里程碑、TODO、DONE、参考入口
 - `MEMORY.md`：可复用经验、易踩坑、稳定边界
 - `NEXT_STEP.md`：唯一下一步执行指针
+- `.harness/bootstrap.toml`：仓库 bootstrap 与治理模型的机器可读 source of truth（若存在）
 - `.plan/`：当前闭环的执行计划与 checklist
 - 项目声明的 spec 路径：设计文档，默认 `docs/superpowers/specs/`
 - `artifacts/`：日志、截图、验收证据
@@ -68,7 +75,7 @@ AGENT_INDEX.md（项目根优先，兜底为 /Users/cory/.coding-cli/AGENT_INDEX
 
 ## 2. Standard Superpowers Workflow
 1. Route
-- 读取 `PROGRESS.md -> NEXT_STEP.md -> MEMORY.md -> AGENT_INDEX.md`
+- 读取 `PROGRESS.md -> NEXT_STEP.md -> MEMORY.md -> AGENT_INDEX.md -> .harness/bootstrap.toml（若存在）`
 - 加载 `using-superpowers`
 - 由项目 `AGENT_INDEX.md` 决定当前任务应走的 agent / skill
 
@@ -97,7 +104,7 @@ AGENT_INDEX.md（项目根优先，兜底为 /Users/cory/.coding-cli/AGENT_INDEX
 - `NEXT_STEP.md` 永远只保留一条直接可执行指针
 
 ## 3. Context Loading Protocol
-- L0：`PROGRESS.md -> NEXT_STEP.md -> MEMORY.md -> AGENT_INDEX.md`
+- L0：`PROGRESS.md -> NEXT_STEP.md -> MEMORY.md -> AGENT_INDEX.md -> .harness/bootstrap.toml（若存在）`
 - L1：当前 Active spec + 当前 Active plan / checklist
 - L2：历史 specs / plans，仅用于回归、审计、验收口径争议
 
@@ -120,6 +127,7 @@ AGENT_INDEX.md（项目根优先，兜底为 /Users/cory/.coding-cli/AGENT_INDEX
 ## 5. Quality Gate
 交付前必须：
 - 运行项目声明的验证命令
+- 若仓库已声明 Harness 治理模型，先确认文档真相、lint/test invariant 文档与当前交付边界一致
 - 如果项目尚未声明门禁，至少执行最强可用的 `test`、`typecheck`、`build` 等价验证
 - 若任一门禁失败，不得宣称完成，必须明确失败点和修复计划
 
@@ -145,6 +153,7 @@ AGENT_INDEX.md（项目根优先，兜底为 /Users/cory/.coding-cli/AGENT_INDEX
 - 读取 NEXT_STEP.md
 - 读取 MEMORY.md
 - 读取 AGENT_INDEX.md（项目根优先，共享兜底其次）
+- 若存在则读取 .harness/bootstrap.toml
 - 加载 using-superpowers
 - 按路由进入对应 process skill
 ```

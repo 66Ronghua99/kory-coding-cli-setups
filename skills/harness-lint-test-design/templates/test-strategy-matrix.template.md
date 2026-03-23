@@ -1,5 +1,5 @@
 # Test Strategy Matrix
 
-| Invariant | Fixture Or Graph Scope | Test Layer | Failure Signal | Evidence Path | Notes |
-| --- | --- | --- | --- | --- | --- |
-| [example] | [boundary graph or fixture scope] | [unit/contract/structural/integration/regression] | [what fails] | [artifact or command note] | [notes] |
+| Invariant Id | Proof Type | Fixture Or Graph Scope | Current Phase | Failure Signal | Evidence Command Or Artifact | Exception Ledger Ref | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| [example] | [unit/contract/structural/integration/regression] | [boundary graph, fixture, or runtime slice] | [steady-state/phase-x] | [what fails] | [command, report, or artifact path] | [none or exception id] | [notes] |

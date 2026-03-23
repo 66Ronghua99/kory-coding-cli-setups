@@ -10,4 +10,6 @@ Recommended practice:
 
 - boundary rules start at `error` when feasible
 - budget rules may begin at `warn` and tighten as the codebase stabilizes
-- promotion criteria should be explicit in repository docs
+- every `warn -> error` move should have an explicit ratchet trigger
+- severity now and severity target should both be recorded when a repo is still in transition
+- promotion criteria should be explicit in repository docs or the exception ledger

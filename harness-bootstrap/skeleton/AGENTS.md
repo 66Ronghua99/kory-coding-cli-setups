@@ -22,7 +22,12 @@
 
 - Prefer repository-local documents over chat-only context.
 - Use the matching Superpowers skill before implementation.
-- Read Harness governance skills when checking repository truth or code invariants.
+- Treat `.harness/bootstrap.toml` as the machine-readable bootstrap source of truth.
+- `Superpowers` drives workflow execution; `Harness` defines governance standards.
+- `Harness` enters the workflow when bootstrap, repository truth, invariant design, or architecture-drift questions appear; otherwise it stays as a constraint source behind the active Superpowers stage.
+- Use `harness:doc-health` for repository truth, pointer drift, or stale spec/plan/evidence links.
+- Use `harness:lint-test-design` for lint/test invariant design and hardgate policy.
+- Use `harness:refactor` for architecture-drift findings and bounded refactor governance.
 - Create specs from `docs/superpowers/templates/SPEC_TEMPLATE.md`.
 - Create plans from `docs/superpowers/templates/PLAN_TEMPLATE.md`.
 - Keep `NEXT_STEP.md` to one direct next action.
