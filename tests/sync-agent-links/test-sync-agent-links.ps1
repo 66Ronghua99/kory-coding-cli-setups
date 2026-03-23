@@ -182,6 +182,7 @@ function Test-NonGitSuperpowersPathFails {
     New-FakeSource -SourceDir $source -RepoRoot $repoRoot
     New-Item -ItemType Directory -Force -Path $home | Out-Null
     New-Item -ItemType Directory -Force -Path (Join-Path $source "superpowers") | Out-Null
+    'not-a-git-repo' | Set-Content -Path (Join-Path $source "superpowers\README.txt")
 
     $failed = $false
     try {
@@ -193,10 +194,27 @@ function Test-NonGitSuperpowersPathFails {
     Assert-True $failed "Expected non-git superpowers path to fail"
 }
 
+function Test-EmptySuperpowersDirectoryBootstrapsSuccessfully {
+    $tempdir = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
+    $source = Join-Path $tempdir "source"
+    $home = Join-Path $tempdir "home"
+    $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+    $remote = New-SuperpowersRemote -RemoteRoot (Join-Path $tempdir "remote")
+    New-FakeSource -SourceDir $source -RepoRoot $repoRoot
+    New-Item -ItemType Directory -Force -Path $home | Out-Null
+    New-Item -ItemType Directory -Force -Path (Join-Path $source "superpowers") | Out-Null
+
+    Invoke-Sync -SourceDir $source -HomeDir $home -Remote $remote
+
+    Assert-Exists (Join-Path $source "superpowers\.git")
+    Assert-Exists (Join-Path $source "skills\superpowers\using-superpowers\SKILL.md")
+}
+
 Test-BootstrapsSuperpowersAndSyncsTargets
 Test-UpdateModeFastForwardsCheckout
 Test-ConflictingTargetsAreBackedUp
 Test-RerunIsIdempotent
 Test-NonGitSuperpowersPathFails
+Test-EmptySuperpowersDirectoryBootstrapsSuccessfully
 
 Write-Host "PASS: PowerShell sync regression checks"

@@ -107,6 +107,13 @@ ensure_superpowers_repo() {
     return
   fi
 
+  if [[ -d "$SUPERPOWERS_DIR" && -z "$(find "$SUPERPOWERS_DIR" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]]; then
+    require_git
+    run_cmd git clone "$SUPERPOWERS_REMOTE_URL" "$SUPERPOWERS_DIR"
+    log "Cloned superpowers into empty directory $SUPERPOWERS_DIR"
+    return
+  fi
+
   [[ -d "$SUPERPOWERS_DIR/.git" ]] || die "Existing superpowers path is not a git repository: $SUPERPOWERS_DIR"
 }
 

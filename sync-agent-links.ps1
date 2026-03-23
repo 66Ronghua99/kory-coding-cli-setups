@@ -60,11 +60,24 @@ function Get-LinkTarget {
     }
 
     $item = Get-Item -LiteralPath $Path -Force
-    if ($null -ne $item.LinkTarget) {
-        if ($item.LinkTarget -is [System.Array]) {
-            return [string]$item.LinkTarget[0]
+    $linkTargetProperty = $item.PSObject.Properties["LinkTarget"]
+    if ($null -ne $linkTargetProperty) {
+        $linkTarget = $linkTargetProperty.Value
+        if ($linkTarget -is [System.Array]) {
+            return [string]$linkTarget[0]
         }
-        return [string]$item.LinkTarget
+        return [string]$linkTarget
+    }
+
+    $targetProperty = $item.PSObject.Properties["Target"]
+    if ($null -ne $targetProperty) {
+        $target = $targetProperty.Value
+        if ($target -is [System.Array]) {
+            return [string]$target[0]
+        }
+        if ($null -ne $target) {
+            return [string]$target
+        }
     }
 
     return $null
@@ -139,6 +152,15 @@ function Ensure-SuperpowersRepo {
             git clone $SuperpowersRemoteUrl $SuperpowersDir | Out-Null
         }
         Log "Cloned superpowers into $SuperpowersDir"
+        return
+    }
+
+    if ((Test-Path -LiteralPath $SuperpowersDir -PathType Container) -and -not (Get-ChildItem -LiteralPath $SuperpowersDir -Force | Select-Object -First 1)) {
+        Require-Git
+        Invoke-Step "git clone $SuperpowersRemoteUrl $SuperpowersDir" {
+            git clone $SuperpowersRemoteUrl $SuperpowersDir | Out-Null
+        }
+        Log "Cloned superpowers into empty directory $SuperpowersDir"
         return
     }
 

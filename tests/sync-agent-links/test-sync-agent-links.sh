@@ -223,10 +223,27 @@ test_non_git_superpowers_path_fails() {
   remote="$(make_superpowers_remote "$tempdir/superpowers-remote")"
   make_fake_source "$source"
   mkdir -p "$home_dir" "$source/superpowers"
+  printf 'not-a-git-repo\n' > "$source/superpowers/README.txt"
 
   if run_sync "$source" "$home_dir" "$remote"; then
     fail "Expected sync to fail when superpowers path is not a git repository"
   fi
+}
+
+test_empty_superpowers_directory_bootstraps_successfully() {
+  local tempdir
+  tempdir="$(mktemp -d)"
+  local source="$tempdir/source"
+  local home_dir="$tempdir/home"
+  local remote
+  remote="$(make_superpowers_remote "$tempdir/superpowers-remote")"
+  make_fake_source "$source"
+  mkdir -p "$home_dir" "$source/superpowers"
+
+  run_sync "$source" "$home_dir" "$remote"
+
+  assert_exists "$source/superpowers/.git"
+  assert_symlink_target "$source/skills/superpowers" "$source/superpowers/skills"
 }
 
 test_dirty_checkout_blocks_update_mode() {
@@ -298,6 +315,7 @@ run_selected_tests() {
     test_rerun_is_idempotent_when_links_are_correct
     test_missing_git_fails_when_superpowers_checkout_is_missing
     test_non_git_superpowers_path_fails
+    test_empty_superpowers_directory_bootstraps_successfully
     test_dirty_checkout_blocks_update_mode
     test_non_fast_forward_update_fails
     test_powershell_script_exists
