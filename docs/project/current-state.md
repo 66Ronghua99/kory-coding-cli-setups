@@ -13,11 +13,12 @@
   - `.copilot/copilot-instructions.md`, `.copilot/skills`, `.copilot/AGENTS.md`
   - `.codex/AGENTS.md`, `.codex/config.toml`, `.codex/agents`, `.codex/skills/skills`
 - The PowerShell implementation mirrors the same hidden-directory mapping except for `statusline-command.sh`, which remains Bash-only by user choice.
+- Both sync scripts now require an already initialized `superpowers` submodule and fail with an actionable submodule command instead of cloning or updating it themselves.
 - On Windows, the PowerShell sync now falls back to hard links for file targets when file symlink privilege is unavailable, while directory targets still fall back to junctions.
 - Fresh Windows prompt/skill sync evidence is recorded in [`artifacts/sync-agent-links/2026-03-23-windows-prompt-skill-sync.md`](/Users/cory/.coding-cli/artifacts/sync-agent-links/2026-03-23-windows-prompt-skill-sync.md).
-- Regression coverage currently lives in [`tests/sync-agent-links/test-sync-agent-links.sh`](/Users/cory/.coding-cli/tests/sync-agent-links/test-sync-agent-links.sh) and [`tests/sync-agent-links/test-sync-agent-links.ps1`](/Users/cory/.coding-cli/tests/sync-agent-links/test-sync-agent-links.ps1). The PowerShell harness now checks downstream prompt files for live-link behavior too, but the full clone/update fixture-remote path is still blocked in this environment by a Git for Windows `sh.exe` signal-pipe failure.
+- Regression coverage currently lives in [`tests/sync-agent-links/test-sync-agent-links.sh`](/Users/cory/.coding-cli/tests/sync-agent-links/test-sync-agent-links.sh) and [`tests/sync-agent-links/test-sync-agent-links.ps1`](/Users/cory/.coding-cli/tests/sync-agent-links/test-sync-agent-links.ps1). Those tests now assume an initialized local `superpowers` checkout rather than a fixture remote. The PowerShell test passes in this Windows session; the Bash test is still blocked here by `Bash/Service/CreateInstance/E_ACCESSDENIED`.
 
 ## Follow-Up
 
-- Decide whether the sync scripts should keep their legacy clone/update code paths now that `superpowers` is a formal submodule rather than a loose nested checkout.
+- Capture fresh Bash-side verification evidence for the simplified submodule-only sync flow in an environment where `bash` can launch.
 - If Windows-specific path quirks appear in Codex/Claude app builds, fold those observed paths back into the sync docs before expanding scope further.

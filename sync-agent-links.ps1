@@ -9,7 +9,6 @@ $ErrorActionPreference = "Stop"
 $SourceDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $TargetHome = if ($env:SYNC_HOME) { $env:SYNC_HOME } elseif ($env:USERPROFILE) { $env:USERPROFILE } else { throw "USERPROFILE is not set." }
 $SuperpowersDir = if ($env:SUPERPOWERS_DIR) { $env:SUPERPOWERS_DIR } else { Join-Path $SourceDir "superpowers" }
-$SuperpowersRemoteUrl = if ($env:SUPERPOWERS_REMOTE_URL) { $env:SUPERPOWERS_REMOTE_URL } else { "https://github.com/obra/superpowers.git" }
 $SuperpowersSkillsLink = if ($env:SUPERPOWERS_SKILLS_LINK) { $env:SUPERPOWERS_SKILLS_LINK } else { Join-Path (Join-Path $SourceDir "skills") "superpowers" }
 $BackupRoot = Join-Path $TargetHome (".coding-cli-sync-backups\" + (Get-Date -Format "yyyyMMdd_HHmmss"))
 
@@ -32,39 +31,6 @@ function Invoke-Step {
     & $Action
 }
 
-function Invoke-Native {
-    param(
-        [string]$FilePath,
-        [string[]]$Arguments
-    )
-
-    $label = ($FilePath + " " + (($Arguments | ForEach-Object {
-        if ($_ -match '\s') {
-            '"' + $_ + '"'
-        } else {
-            $_
-        }
-    }) -join " ")).Trim()
-
-    if ($DryRun) {
-        Write-Host "[dry-run] $label"
-        return @()
-    }
-
-    $output = & $FilePath @Arguments 2>&1
-    $exitCode = $LASTEXITCODE
-    if ($exitCode -ne 0) {
-        $details = ($output | ForEach-Object { "$_" }) -join [Environment]::NewLine
-        if ([string]::IsNullOrWhiteSpace($details)) {
-            throw "Command failed ($exitCode): $label"
-        }
-
-        throw "Command failed ($exitCode): $label`n$details"
-    }
-
-    return $output
-}
-
 function Ensure-Dir {
     param([string]$Path)
     if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
@@ -79,7 +45,12 @@ function Normalize-ComparablePath {
         return $null
     }
 
-    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    try {
+        $fullPath = [System.IO.Path]::GetFullPath($Path)
+    } catch {
+        $fullPath = [string]$Path
+    }
+
     return $fullPath.TrimEnd('\', '/').ToLowerInvariant()
 }
 
@@ -116,20 +87,6 @@ function Test-SameVolume {
     return [string]::Equals($leftRoot, $rightRoot, [System.StringComparison]::OrdinalIgnoreCase)
 }
 
-function Resolve-GitRemoteUrl {
-    param([string]$RemoteUrl)
-
-    if ([string]::IsNullOrWhiteSpace($RemoteUrl)) {
-        return $RemoteUrl
-    }
-
-    if ($RemoteUrl -match '^[a-zA-Z]:[\\/]') {
-        return ([System.Uri]([System.IO.Path]::GetFullPath($RemoteUrl))).AbsoluteUri
-    }
-
-    return $RemoteUrl
-}
-
 function Backup-Path {
     param([string]$Target)
 
@@ -143,35 +100,49 @@ function Backup-Path {
     }
 }
 
-function Get-LinkTarget {
+function Get-LinkTargets {
     param([string]$Path)
 
     if (-not (Test-Path -LiteralPath $Path)) {
-        return $null
+        return @()
     }
 
     $item = Get-Item -LiteralPath $Path -Force
+    $linkTypeProperty = $item.PSObject.Properties["LinkType"]
+    if ($null -ne $linkTypeProperty -and $linkTypeProperty.Value -eq "HardLink") {
+        $targetProperty = $item.PSObject.Properties["Target"]
+        if ($null -ne $targetProperty) {
+            $target = $targetProperty.Value
+            if ($target -is [System.Array]) {
+                return @($target | ForEach-Object { [string]$_ })
+            }
+            if ($null -ne $target) {
+                return @([string]$target)
+            }
+        }
+    }
+
     $linkTargetProperty = $item.PSObject.Properties["LinkTarget"]
     if ($null -ne $linkTargetProperty) {
         $linkTarget = $linkTargetProperty.Value
         if ($linkTarget -is [System.Array]) {
-            return [string]$linkTarget[0]
+            return @($linkTarget | ForEach-Object { [string]$_ })
         }
-        return [string]$linkTarget
+        return @([string]$linkTarget)
     }
 
     $targetProperty = $item.PSObject.Properties["Target"]
     if ($null -ne $targetProperty) {
         $target = $targetProperty.Value
         if ($target -is [System.Array]) {
-            return [string]$target[0]
+            return @($target | ForEach-Object { [string]$_ })
         }
         if ($null -ne $target) {
-            return [string]$target
+            return @([string]$target)
         }
     }
 
-    return $null
+    return @()
 }
 
 function Ensure-FileSymlink {
@@ -183,10 +154,19 @@ function Ensure-FileSymlink {
     Ensure-Dir (Split-Path -Parent $Target)
 
     $normalizedSource = Normalize-ComparablePath $Source
-    $current = Normalize-ComparablePath (Get-LinkTarget $Target)
-    if ($current -eq $normalizedSource) {
+    $currentTargets = @(Get-LinkTargets $Target | ForEach-Object { Normalize-ComparablePath $_ })
+    if ($currentTargets -contains $normalizedSource) {
         Log "OK file link: $Target -> $Source"
         return
+    }
+
+    if ((Test-Path -LiteralPath $Source -PathType Leaf) -and (Test-Path -LiteralPath $Target -PathType Leaf)) {
+        $sourceHash = (Get-FileHash -LiteralPath $Source).Hash
+        $targetHash = (Get-FileHash -LiteralPath $Target).Hash
+        if ($sourceHash -eq $targetHash) {
+            Log "OK file sync: $Target matches $Source"
+            return
+        }
     }
 
     if (Test-Path -LiteralPath $Target) {
@@ -219,8 +199,8 @@ function Ensure-DirectoryLink {
     Ensure-Dir (Split-Path -Parent $Target)
 
     $normalizedSource = Normalize-ComparablePath $Source
-    $current = Normalize-ComparablePath (Get-LinkTarget $Target)
-    if ($current -eq $normalizedSource) {
+    $currentTargets = @(Get-LinkTargets $Target | ForEach-Object { Normalize-ComparablePath $_ })
+    if ($currentTargets -contains $normalizedSource) {
         Log "OK directory link: $Target -> $Source"
         return
     }
@@ -234,73 +214,26 @@ function Ensure-DirectoryLink {
             New-Item -ItemType SymbolicLink -Path $Target -Target $Source | Out-Null
         }
     } catch {
-        Invoke-Native -FilePath "cmd.exe" -Arguments @("/c", "mklink /J `"$Target`" `"$Source`"") | Out-Null
+        Invoke-Step "junction $Target -> $Source" {
+            cmd /c "mklink /J `"$Target`" `"$Source`"" | Out-Null
+        }
     }
 
     Log "Linked $Target -> $Source"
 }
 
-function Require-Git {
-    if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-        throw "git is required for superpowers clone/update"
-    }
-}
-
 function Ensure-SuperpowersRepo {
-    $cloneRemote = Resolve-GitRemoteUrl $SuperpowersRemoteUrl
-
     if (-not (Test-Path -LiteralPath $SuperpowersDir)) {
-        Require-Git
-        Ensure-Dir (Split-Path -Parent $SuperpowersDir)
-        Invoke-Native -FilePath "git" -Arguments @("clone", $cloneRemote, $SuperpowersDir) | Out-Null
-        Log "Cloned superpowers into $SuperpowersDir"
-        return
-    }
-
-    if ((Test-Path -LiteralPath $SuperpowersDir -PathType Container) -and -not (Get-ChildItem -LiteralPath $SuperpowersDir -Force | Select-Object -First 1)) {
-        Require-Git
-        Invoke-Native -FilePath "git" -Arguments @("clone", $cloneRemote, $SuperpowersDir) | Out-Null
-        Log "Cloned superpowers into empty directory $SuperpowersDir"
-        return
+        throw "Missing superpowers checkout: $SuperpowersDir. Run 'git submodule update --init --recursive'."
     }
 
     if (-not (Test-Path -LiteralPath (Join-Path $SuperpowersDir ".git"))) {
         throw "Existing superpowers path is not a git repository: $SuperpowersDir"
     }
-}
 
-function Update-SuperpowersRepo {
-    if (-not $UpdateSuperpowers) {
-        return
+    if (-not (Test-Path -LiteralPath (Join-Path $SuperpowersDir "skills") -PathType Container)) {
+        throw "Missing superpowers skills directory: $SuperpowersDir\skills. Run 'git submodule update --init --recursive'."
     }
-
-    Require-Git
-
-    $status = (Invoke-Native -FilePath "git" -Arguments @("-C", $SuperpowersDir, "status", "--porcelain")) -join [Environment]::NewLine
-    if ($status) {
-        throw "Superpowers checkout has uncommitted changes: $SuperpowersDir"
-    }
-
-    $headOk = $true
-    try {
-        Invoke-Native -FilePath "git" -Arguments @("-C", $SuperpowersDir, "symbolic-ref", "--quiet", "HEAD") | Out-Null
-    } catch {
-        $headOk = $false
-    }
-    if (-not $headOk) {
-        throw "Superpowers checkout is in detached HEAD state: $SuperpowersDir"
-    }
-
-    $upstream = $null
-    try {
-        $upstream = ((Invoke-Native -FilePath "git" -Arguments @("-C", $SuperpowersDir, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}")) -join [Environment]::NewLine).Trim()
-    } catch {
-        throw "Superpowers checkout has no configured upstream branch: $SuperpowersDir"
-    }
-
-    Invoke-Native -FilePath "git" -Arguments @("-C", $SuperpowersDir, "fetch", "--prune") | Out-Null
-    Invoke-Native -FilePath "git" -Arguments @("-C", $SuperpowersDir, "merge", "--ff-only", $upstream) | Out-Null
-    Log "Updated superpowers from $upstream"
 }
 
 function Ensure-SuperpowersSkillsLink {
@@ -330,8 +263,11 @@ Log "Source directory: $SourceDir"
 Log "Superpowers directory: $SuperpowersDir"
 Log "Backup directory: $BackupRoot"
 
+if ($UpdateSuperpowers) {
+    throw "--UpdateSuperpowers is no longer supported. Run 'git submodule update --remote superpowers' manually first."
+}
+
 Ensure-SuperpowersRepo
-Update-SuperpowersRepo
 Ensure-SuperpowersSkillsLink
 
 Ensure-FileSymlink -Source (Join-Path $SourceDir "CLAUDE.md") -Target (Join-Path $TargetHome ".claude\CLAUDE.md")

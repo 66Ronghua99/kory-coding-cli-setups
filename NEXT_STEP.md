@@ -1,7 +1,7 @@
 # Next Step
 
-Decide whether to simplify the sync scripts around the new submodule-first `superpowers` model, then record:
+Run the remaining Bash-side verification flow and record:
 
-- whether clone/update flags should be removed in favor of `git submodule update --init --recursive`
-- whether the remaining tests should stop using fixture remotes and instead assume an initialized local submodule
+- whether `bash tests/sync-agent-links/test-sync-agent-links.sh` passes in an environment where `bash` can launch without `Bash/Service/CreateInstance/E_ACCESSDENIED`
+- whether the Bash behavior matches the already-passing PowerShell submodule-only flow
 - whether the simplified flow still matches the Windows file-link fallback evidence in `artifacts/sync-agent-links/2026-03-23-windows-prompt-skill-sync.md`

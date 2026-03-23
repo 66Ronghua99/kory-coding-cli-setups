@@ -21,7 +21,7 @@ assert_not_exists() {
 assert_file_contains() {
   local path="$1"
   local expected="$2"
-  grep -Fq "$expected" "$path" || fail "Expected $path to contain: $expected"
+  grep -Fq -- "$expected" "$path" || fail "Expected $path to contain: $expected"
 }
 
 assert_symlink_target() {
@@ -33,35 +33,25 @@ assert_symlink_target() {
   [[ "$actual" == "$expected" ]] || fail "Expected $path -> $expected, got $actual"
 }
 
-make_superpowers_remote() {
-  local remote_root="$1"
-  local worktree="$remote_root/work"
-  local bare="$remote_root/remote.git"
+make_superpowers_checkout() {
+  local source="$1"
 
-  mkdir -p "$worktree/skills/using-superpowers"
-  cat > "$worktree/skills/using-superpowers/SKILL.md" <<'EOF'
+  mkdir -p "$source/superpowers/skills/using-superpowers"
+  cat > "$source/superpowers/skills/using-superpowers/SKILL.md" <<'EOF'
 ---
 name: using-superpowers
 description: test fixture
 ---
-
-# Fixture
 EOF
   (
-    cd "$worktree"
+    cd "$source/superpowers"
     git init >/dev/null
     git config user.name "Test"
     git config user.email "test@example.com"
-    git add skills/using-superpowers/SKILL.md
+    printf 'fixture\n' > README.md
+    git add README.md
     git commit -m "init" >/dev/null
-    git branch -M main
-    git init --bare "$bare" >/dev/null
-    git remote add origin "$bare"
-    git push -u origin main >/dev/null
   )
-  git -C "$bare" symbolic-ref HEAD refs/heads/main >/dev/null
-
-  printf '%s\n' "$bare"
 }
 
 make_fake_source() {
@@ -100,60 +90,28 @@ EOF
 run_sync() {
   local source="$1"
   local home_dir="$2"
-  local remote="$3"
-  shift 3
+  shift 2
 
-  HOME="$home_dir" \
-  SUPERPOWERS_REMOTE_URL="$remote" \
-  bash "$source/sync-agent-links.sh" "$@"
+  HOME="$home_dir" bash "$source/sync-agent-links.sh" "$@"
 }
 
-test_bootstraps_superpowers_and_syncs_downstream_skills() {
+test_syncs_initialized_superpowers_checkout() {
   local tempdir
   tempdir="$(mktemp -d)"
   local source="$tempdir/source"
   local home_dir="$tempdir/home"
-  local remote
-  remote="$(make_superpowers_remote "$tempdir/superpowers-remote")"
   make_fake_source "$source"
+  make_superpowers_checkout "$source"
   mkdir -p "$home_dir"
 
-  run_sync "$source" "$home_dir" "$remote"
+  run_sync "$source" "$home_dir"
 
-  assert_exists "$source/superpowers/.git"
   assert_symlink_target "$source/skills/superpowers" "$source/superpowers/skills"
   assert_symlink_target "$home_dir/.claude/skills" "$source/skills"
   assert_symlink_target "$home_dir/.gemini/skills" "$source/skills"
   assert_symlink_target "$home_dir/.copilot/skills" "$source/skills"
   assert_symlink_target "$home_dir/.codex/skills/skills" "$source/skills"
-}
-
-test_update_mode_fast_forwards_superpowers_checkout() {
-  local tempdir
-  tempdir="$(mktemp -d)"
-  local source="$tempdir/source"
-  local home_dir="$tempdir/home"
-  local remote_root="$tempdir/superpowers-remote"
-  local remote
-  remote="$(make_superpowers_remote "$remote_root")"
-  make_fake_source "$source"
-  mkdir -p "$home_dir"
-
-  run_sync "$source" "$home_dir" "$remote"
-
-  cat > "$remote_root/work/skills/using-superpowers/UPDATED.md" <<'EOF'
-updated
-EOF
-  (
-    cd "$remote_root/work"
-    git add skills/using-superpowers/UPDATED.md
-    git commit -m "update" >/dev/null
-    git push >/dev/null
-  )
-
-  run_sync "$source" "$home_dir" "$remote" --update-superpowers
-
-  assert_exists "$source/superpowers/skills/using-superpowers/UPDATED.md"
+  assert_exists "$home_dir/.codex/skills/skills/superpowers/using-superpowers/SKILL.md"
 }
 
 test_conflicting_targets_are_backed_up() {
@@ -161,13 +119,12 @@ test_conflicting_targets_are_backed_up() {
   tempdir="$(mktemp -d)"
   local source="$tempdir/source"
   local home_dir="$tempdir/home"
-  local remote
-  remote="$(make_superpowers_remote "$tempdir/superpowers-remote")"
   make_fake_source "$source"
+  make_superpowers_checkout "$source"
   mkdir -p "$home_dir/.claude"
   printf 'old-claude\n' > "$home_dir/.claude/CLAUDE.md"
 
-  run_sync "$source" "$home_dir" "$remote"
+  run_sync "$source" "$home_dir"
 
   assert_symlink_target "$home_dir/.claude/CLAUDE.md" "$source/CLAUDE.md"
   local backup_file
@@ -181,37 +138,28 @@ test_rerun_is_idempotent_when_links_are_correct() {
   tempdir="$(mktemp -d)"
   local source="$tempdir/source"
   local home_dir="$tempdir/home"
-  local remote
-  remote="$(make_superpowers_remote "$tempdir/superpowers-remote")"
   make_fake_source "$source"
+  make_superpowers_checkout "$source"
   mkdir -p "$home_dir"
 
-  run_sync "$source" "$home_dir" "$remote"
-  run_sync "$source" "$home_dir" "$remote"
+  run_sync "$source" "$home_dir"
+  run_sync "$source" "$home_dir"
 
   assert_not_exists "$home_dir/.coding-cli-sync-backups"
 }
 
-test_missing_git_fails_when_superpowers_checkout_is_missing() {
+test_missing_superpowers_checkout_fails() {
   local tempdir
   tempdir="$(mktemp -d)"
   local source="$tempdir/source"
   local home_dir="$tempdir/home"
-  local remote
-  remote="$(make_superpowers_remote "$tempdir/superpowers-remote")"
   make_fake_source "$source"
-  mkdir -p "$home_dir" "$tempdir/bin"
+  mkdir -p "$home_dir"
 
-  cat > "$tempdir/bin/git" <<'EOF'
-#!/usr/bin/env bash
-echo "git missing for test" >&2
-exit 127
-EOF
-  chmod +x "$tempdir/bin/git"
-
-  if HOME="$home_dir" SUPERPOWERS_REMOTE_URL="$remote" PATH="$tempdir/bin:/usr/bin:/bin" bash "$source/sync-agent-links.sh" >/tmp/test-sync-agent-links.out 2>/tmp/test-sync-agent-links.err; then
-    fail "Expected sync to fail when git is unavailable"
+  if run_sync "$source" "$home_dir" >/tmp/test-sync-agent-links.out 2>/tmp/test-sync-agent-links.err; then
+    fail "Expected sync to fail when superpowers checkout is missing"
   fi
+  assert_file_contains /tmp/test-sync-agent-links.err "git submodule update --init --recursive"
 }
 
 test_non_git_superpowers_path_fails() {
@@ -219,88 +167,28 @@ test_non_git_superpowers_path_fails() {
   tempdir="$(mktemp -d)"
   local source="$tempdir/source"
   local home_dir="$tempdir/home"
-  local remote
-  remote="$(make_superpowers_remote "$tempdir/superpowers-remote")"
   make_fake_source "$source"
-  mkdir -p "$home_dir" "$source/superpowers"
+  mkdir -p "$home_dir" "$source/superpowers/skills"
   printf 'not-a-git-repo\n' > "$source/superpowers/README.txt"
 
-  if run_sync "$source" "$home_dir" "$remote"; then
+  if run_sync "$source" "$home_dir"; then
     fail "Expected sync to fail when superpowers path is not a git repository"
   fi
 }
 
-test_empty_superpowers_directory_bootstraps_successfully() {
+test_update_flag_fails_with_actionable_message() {
   local tempdir
   tempdir="$(mktemp -d)"
   local source="$tempdir/source"
   local home_dir="$tempdir/home"
-  local remote
-  remote="$(make_superpowers_remote "$tempdir/superpowers-remote")"
   make_fake_source "$source"
-  mkdir -p "$home_dir" "$source/superpowers"
-
-  run_sync "$source" "$home_dir" "$remote"
-
-  assert_exists "$source/superpowers/.git"
-  assert_symlink_target "$source/skills/superpowers" "$source/superpowers/skills"
-}
-
-test_dirty_checkout_blocks_update_mode() {
-  local tempdir
-  tempdir="$(mktemp -d)"
-  local source="$tempdir/source"
-  local home_dir="$tempdir/home"
-  local remote_root="$tempdir/superpowers-remote"
-  local remote
-  remote="$(make_superpowers_remote "$remote_root")"
-  make_fake_source "$source"
+  make_superpowers_checkout "$source"
   mkdir -p "$home_dir"
 
-  run_sync "$source" "$home_dir" "$remote"
-
-  printf 'dirty\n' > "$source/superpowers/skills/using-superpowers/DIRTY.md"
-
-  if run_sync "$source" "$home_dir" "$remote" --update-superpowers; then
-    fail "Expected update mode to fail for dirty superpowers checkout"
+  if run_sync "$source" "$home_dir" --update-superpowers >/tmp/test-sync-agent-links-update.out 2>/tmp/test-sync-agent-links-update.err; then
+    fail "Expected legacy update flag to fail"
   fi
-}
-
-test_non_fast_forward_update_fails() {
-  local tempdir
-  tempdir="$(mktemp -d)"
-  local source="$tempdir/source"
-  local home_dir="$tempdir/home"
-  local remote_root="$tempdir/superpowers-remote"
-  local remote
-  remote="$(make_superpowers_remote "$remote_root")"
-  make_fake_source "$source"
-  mkdir -p "$home_dir"
-
-  run_sync "$source" "$home_dir" "$remote"
-
-  (
-    cd "$source/superpowers"
-    git config user.name "Local Test"
-    git config user.email "local@example.com"
-    printf 'local\n' > LOCAL_ONLY.md
-    git add LOCAL_ONLY.md
-    git commit -m "local" >/dev/null
-  )
-
-  cat > "$remote_root/work/skills/using-superpowers/REMOTE_ONLY.md" <<'EOF'
-remote
-EOF
-  (
-    cd "$remote_root/work"
-    git add skills/using-superpowers/REMOTE_ONLY.md
-    git commit -m "remote" >/dev/null
-    git push >/dev/null
-  )
-
-  if run_sync "$source" "$home_dir" "$remote" --update-superpowers; then
-    fail "Expected update mode to fail when fast-forward is impossible"
-  fi
+  assert_file_contains /tmp/test-sync-agent-links-update.err "git submodule update --remote superpowers"
 }
 
 test_powershell_script_exists() {
@@ -309,15 +197,12 @@ test_powershell_script_exists() {
 
 run_selected_tests() {
   local tests=(
-    test_bootstraps_superpowers_and_syncs_downstream_skills
-    test_update_mode_fast_forwards_superpowers_checkout
+    test_syncs_initialized_superpowers_checkout
     test_conflicting_targets_are_backed_up
     test_rerun_is_idempotent_when_links_are_correct
-    test_missing_git_fails_when_superpowers_checkout_is_missing
+    test_missing_superpowers_checkout_fails
     test_non_git_superpowers_path_fails
-    test_empty_superpowers_directory_bootstraps_successfully
-    test_dirty_checkout_blocks_update_mode
-    test_non_fast_forward_update_fails
+    test_update_flag_fails_with_actionable_message
     test_powershell_script_exists
   )
 
