@@ -12,12 +12,13 @@ M1: Ship cross-platform sync scripts with managed `superpowers` bootstrap and up
 - Bash sync now bootstraps and optionally updates `superpowers`
 - Windows PowerShell sync script added for the same hidden-directory targets
 - Windows PowerShell sync now preserves prompt/config file sync on non-admin setups by falling back to hard links for file targets and using Windows-safe backup paths
+- `superpowers` is now declared as a formal Git submodule, and the generated `skills/superpowers` link is ignored instead of being tracked
 
 ## In Progress
 
-- Capture fresh clone/update verification evidence for the PowerShell path after the local Git-for-Windows fixture-remote issue is isolated
+- Align the sync script behavior and tests fully with the new submodule-first `superpowers` model
 
 ## Pending
 
-- Run the full PowerShell verification flow on a Windows machine where local fixture remotes can `push` and `clone`
+- Decide whether to remove the legacy clone/update flags from the sync scripts now that submodule update is a manual Git action
 - Declare repository lint/test invariants in docs

@@ -7,7 +7,7 @@ This repository is the user's shared coding-agent control plane. It stores the c
 ## Success Criteria
 
 - A fresh machine can run one sync command and receive the expected agent config, skills, and governance files.
-- `superpowers` is treated as a managed dependency of the sync flow instead of a manual after-step.
+- `superpowers` is versioned as a Git submodule and can be fetched with the parent repository through recursive clone or submodule init/update commands.
 - The downstream agent homes stay consistent with the repository source of truth through symlinks or junctions rather than copied snapshots.
 
 ## Constraints
@@ -15,6 +15,14 @@ This repository is the user's shared coding-agent control plane. It stores the c
 - Prefer explicit failure over silent fallback when git state, link targets, or update conditions are invalid.
 - Preserve the existing whole-directory `skills` sync model so current agent discovery behavior does not regress.
 - Windows support should follow hidden-directory conventions under `%USERPROFILE%`.
+- `skills/superpowers` is a generated local link target and must stay out of Git tracking.
+
+## Git Setup
+
+- Clone fresh with `git clone --recurse-submodules <repo>`.
+- In an existing clone, run `git submodule update --init --recursive`.
+- Update `superpowers` manually when needed with `git submodule update --remote superpowers`.
+- Run the sync script after submodule init or update so it can recreate `skills/superpowers -> superpowers/skills`.
 
 ## Related Docs
 

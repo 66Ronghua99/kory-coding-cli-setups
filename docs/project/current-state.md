@@ -5,10 +5,8 @@
 - The repository now has two sync entrypoints:
   - [`sync-agent-links.sh`](/Users/cory/.coding-cli/sync-agent-links.sh) for macOS/Linux shells
   - [`sync-agent-links.ps1`](/Users/cory/.coding-cli/sync-agent-links.ps1) for Windows PowerShell
-- Both sync scripts treat [`superpowers`](/Users/cory/.coding-cli/superpowers) as a managed checkout:
-  - clone it when missing
-  - optionally update it through explicit update mode
-  - repair [`skills/superpowers`](/Users/cory/.coding-cli/skills/superpowers) so the existing whole-directory `skills` sync keeps exposing Superpowers downstream
+- [`superpowers`](/Users/cory/.coding-cli/superpowers) is tracked as a Git submodule and is expected to be initialized through `git clone --recurse-submodules` or `git submodule update --init --recursive`.
+- The sync scripts repair or recreate [`skills/superpowers`](/Users/cory/.coding-cli/skills/superpowers) as a local generated link to [`superpowers/skills`](/Users/cory/.coding-cli/superpowers/skills); that generated link is ignored by Git instead of being tracked.
 - The Bash implementation keeps the existing downstream target layout:
   - `.claude/CLAUDE.md`, `.claude/skills`, `.claude/settings.json`, `.claude/statusline-command.sh`
   - `.gemini/GEMINI.md`, `.gemini/skills`
@@ -21,5 +19,5 @@
 
 ## Follow-Up
 
-- Run the remaining PowerShell clone/update regression path on a Windows machine where the local fixture remote can be cloned and pushed without the Git for Windows `sh.exe` failure.
+- Decide whether the sync scripts should keep their legacy clone/update code paths now that `superpowers` is a formal submodule rather than a loose nested checkout.
 - If Windows-specific path quirks appear in Codex/Claude app builds, fold those observed paths back into the sync docs before expanding scope further.
