@@ -1,7 +1,7 @@
 # Next Step
 
-Run the new Windows PowerShell sync on a real Windows machine and record:
+Run the full PowerShell regression flow in a Windows environment where Git for Windows can `push` and `clone` the local fixture remote, then record:
 
-- whether `sync-agent-links.ps1` can create the expected hidden-directory links/junctions
-- whether `--UpdateSuperpowers` fast-forwards the local checkout cleanly
-- any app-specific path differences that need to be folded back into the docs
+- whether `sync-agent-links.ps1` now bootstraps `superpowers` cleanly from the fixture remote
+- whether `--UpdateSuperpowers` still fast-forwards the local checkout cleanly
+- whether the verified clone/update behavior matches the new Windows file-link fallback evidence in `artifacts/sync-agent-links/2026-03-23-windows-prompt-skill-sync.md`

@@ -24,11 +24,32 @@ function Assert-NotExists {
     Assert-True (-not (Test-Path -LiteralPath $Path)) "Expected path to be absent: $Path"
 }
 
+function Assert-FileReflectsSource {
+    param(
+        [string]$Source,
+        [string]$Target
+    )
+
+    Assert-Exists $Source
+    Assert-Exists $Target
+
+    $updated = [System.Guid]::NewGuid().ToString()
+    Set-Content -Path $Source -Value $updated
+    $targetContent = Get-Content -Path $Target -Raw
+    Assert-True ($targetContent.Trim() -eq $updated) "Expected $Target to stay linked to $Source"
+}
+
+function Convert-ToFileUri {
+    param([string]$Path)
+    return ([System.Uri]([System.IO.Path]::GetFullPath($Path))).AbsoluteUri
+}
+
 function New-SuperpowersRemote {
     param([string]$RemoteRoot)
 
     $worktree = Join-Path $RemoteRoot "work"
     $bare = Join-Path $RemoteRoot "remote.git"
+    $bareUri = Convert-ToFileUri $bare
     New-Item -ItemType Directory -Force -Path (Join-Path $worktree "skills\using-superpowers") | Out-Null
     @"
 ---
@@ -45,7 +66,7 @@ description: test fixture
     git commit -m "init" | Out-Null
     git branch -M main
     git init --bare $bare | Out-Null
-    git remote add origin $bare
+    git remote add origin $bareUri
     git push -u origin main | Out-Null
     Pop-Location
 
@@ -104,31 +125,32 @@ function Invoke-Sync {
 function Test-BootstrapsSuperpowersAndSyncsTargets {
     $tempdir = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
     $source = Join-Path $tempdir "source"
-    $home = Join-Path $tempdir "home"
+    $homeDir = Join-Path $tempdir "home"
     $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
     $remote = New-SuperpowersRemote -RemoteRoot (Join-Path $tempdir "remote")
     New-FakeSource -SourceDir $source -RepoRoot $repoRoot
-    New-Item -ItemType Directory -Force -Path $home | Out-Null
+    New-Item -ItemType Directory -Force -Path $homeDir | Out-Null
 
-    Invoke-Sync -SourceDir $source -HomeDir $home -Remote $remote
+    Invoke-Sync -SourceDir $source -HomeDir $homeDir -Remote $remote
 
     Assert-Exists (Join-Path $source "superpowers\.git")
     Assert-Exists (Join-Path $source "skills\superpowers\using-superpowers\SKILL.md")
-    Assert-Exists (Join-Path $home ".claude\skills\sample-skill\SKILL.md")
-    Assert-Exists (Join-Path $home ".codex\skills\skills\sample-skill\SKILL.md")
+    Assert-Exists (Join-Path $homeDir ".claude\skills\sample-skill\SKILL.md")
+    Assert-Exists (Join-Path $homeDir ".codex\skills\skills\sample-skill\SKILL.md")
+    Assert-FileReflectsSource -Source (Join-Path $source "CLAUDE.md") -Target (Join-Path $homeDir ".claude\CLAUDE.md")
 }
 
 function Test-UpdateModeFastForwardsCheckout {
     $tempdir = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
     $source = Join-Path $tempdir "source"
-    $home = Join-Path $tempdir "home"
+    $homeDir = Join-Path $tempdir "home"
     $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
     $remoteRoot = Join-Path $tempdir "remote"
     $remote = New-SuperpowersRemote -RemoteRoot $remoteRoot
     New-FakeSource -SourceDir $source -RepoRoot $repoRoot
-    New-Item -ItemType Directory -Force -Path $home | Out-Null
+    New-Item -ItemType Directory -Force -Path $homeDir | Out-Null
 
-    Invoke-Sync -SourceDir $source -HomeDir $home -Remote $remote
+    Invoke-Sync -SourceDir $source -HomeDir $homeDir -Remote $remote
 
     'updated' | Set-Content -Path (Join-Path $remoteRoot "work\skills\using-superpowers\UPDATED.md")
     Push-Location (Join-Path $remoteRoot "work")
@@ -137,7 +159,7 @@ function Test-UpdateModeFastForwardsCheckout {
     git push | Out-Null
     Pop-Location
 
-    Invoke-Sync -SourceDir $source -HomeDir $home -Remote $remote -UpdateSuperpowers
+    Invoke-Sync -SourceDir $source -HomeDir $homeDir -Remote $remote -UpdateSuperpowers
 
     Assert-Exists (Join-Path $source "superpowers\skills\using-superpowers\UPDATED.md")
 }
@@ -145,48 +167,48 @@ function Test-UpdateModeFastForwardsCheckout {
 function Test-ConflictingTargetsAreBackedUp {
     $tempdir = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
     $source = Join-Path $tempdir "source"
-    $home = Join-Path $tempdir "home"
+    $homeDir = Join-Path $tempdir "home"
     $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
     $remote = New-SuperpowersRemote -RemoteRoot (Join-Path $tempdir "remote")
     New-FakeSource -SourceDir $source -RepoRoot $repoRoot
-    New-Item -ItemType Directory -Force -Path (Join-Path $home ".claude") | Out-Null
-    'old-claude' | Set-Content -Path (Join-Path $home ".claude\CLAUDE.md")
+    New-Item -ItemType Directory -Force -Path (Join-Path $homeDir ".claude") | Out-Null
+    'old-claude' | Set-Content -Path (Join-Path $homeDir ".claude\CLAUDE.md")
 
-    Invoke-Sync -SourceDir $source -HomeDir $home -Remote $remote
+    Invoke-Sync -SourceDir $source -HomeDir $homeDir -Remote $remote
 
-    $backup = Get-ChildItem -LiteralPath (Join-Path $home ".coding-cli-sync-backups") -Recurse -Filter "CLAUDE.md" | Select-Object -First 1
+    $backup = Get-ChildItem -LiteralPath (Join-Path $homeDir ".coding-cli-sync-backups") -Recurse -Filter "CLAUDE.md" | Select-Object -First 1
     Assert-True ($null -ne $backup) "Expected backup file for .claude/CLAUDE.md"
 }
 
 function Test-RerunIsIdempotent {
     $tempdir = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
     $source = Join-Path $tempdir "source"
-    $home = Join-Path $tempdir "home"
+    $homeDir = Join-Path $tempdir "home"
     $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
     $remote = New-SuperpowersRemote -RemoteRoot (Join-Path $tempdir "remote")
     New-FakeSource -SourceDir $source -RepoRoot $repoRoot
-    New-Item -ItemType Directory -Force -Path $home | Out-Null
+    New-Item -ItemType Directory -Force -Path $homeDir | Out-Null
 
-    Invoke-Sync -SourceDir $source -HomeDir $home -Remote $remote
-    Invoke-Sync -SourceDir $source -HomeDir $home -Remote $remote
+    Invoke-Sync -SourceDir $source -HomeDir $homeDir -Remote $remote
+    Invoke-Sync -SourceDir $source -HomeDir $homeDir -Remote $remote
 
-    Assert-NotExists (Join-Path $home ".coding-cli-sync-backups")
+    Assert-NotExists (Join-Path $homeDir ".coding-cli-sync-backups")
 }
 
 function Test-NonGitSuperpowersPathFails {
     $tempdir = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
     $source = Join-Path $tempdir "source"
-    $home = Join-Path $tempdir "home"
+    $homeDir = Join-Path $tempdir "home"
     $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
     $remote = New-SuperpowersRemote -RemoteRoot (Join-Path $tempdir "remote")
     New-FakeSource -SourceDir $source -RepoRoot $repoRoot
-    New-Item -ItemType Directory -Force -Path $home | Out-Null
+    New-Item -ItemType Directory -Force -Path $homeDir | Out-Null
     New-Item -ItemType Directory -Force -Path (Join-Path $source "superpowers") | Out-Null
     'not-a-git-repo' | Set-Content -Path (Join-Path $source "superpowers\README.txt")
 
     $failed = $false
     try {
-        Invoke-Sync -SourceDir $source -HomeDir $home -Remote $remote
+        Invoke-Sync -SourceDir $source -HomeDir $homeDir -Remote $remote
     } catch {
         $failed = $true
     }
@@ -197,14 +219,14 @@ function Test-NonGitSuperpowersPathFails {
 function Test-EmptySuperpowersDirectoryBootstrapsSuccessfully {
     $tempdir = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
     $source = Join-Path $tempdir "source"
-    $home = Join-Path $tempdir "home"
+    $homeDir = Join-Path $tempdir "home"
     $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
     $remote = New-SuperpowersRemote -RemoteRoot (Join-Path $tempdir "remote")
     New-FakeSource -SourceDir $source -RepoRoot $repoRoot
-    New-Item -ItemType Directory -Force -Path $home | Out-Null
+    New-Item -ItemType Directory -Force -Path $homeDir | Out-Null
     New-Item -ItemType Directory -Force -Path (Join-Path $source "superpowers") | Out-Null
 
-    Invoke-Sync -SourceDir $source -HomeDir $home -Remote $remote
+    Invoke-Sync -SourceDir $source -HomeDir $homeDir -Remote $remote
 
     Assert-Exists (Join-Path $source "superpowers\.git")
     Assert-Exists (Join-Path $source "skills\superpowers\using-superpowers\SKILL.md")

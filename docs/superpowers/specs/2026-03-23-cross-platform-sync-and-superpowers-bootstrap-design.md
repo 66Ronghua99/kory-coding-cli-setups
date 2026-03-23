@@ -59,7 +59,7 @@ As a result, setting up a fresh Windows environment requires manual steps, and e
 - If update mode is requested and the `superpowers` checkout has uncommitted changes, a detached `HEAD`, or cannot fast-forward cleanly from its configured upstream, the scripts fail without mutating the checkout.
 - If update mode is requested and the checkout has no configured upstream branch, the scripts fail with a message that names the checkout path and missing branch tracking state.
 - If a target path cannot be backed up or linked, the scripts stop with a concrete path-specific error.
-- If Windows symbolic-link creation is unavailable, the PowerShell script must use a directory junction for directory targets such as `skills/superpowers` and downstream `skills` links; if junction creation also fails, the script stops with the underlying error.
+- If Windows symbolic-link creation is unavailable, the PowerShell script must fall back to hard links for file targets on the same volume and directory junctions for directory targets such as `skills/superpowers` and downstream `skills` links; if the required Windows-native fallback also fails, the script stops with the underlying error.
 - Allowed fallback:
   if `superpowers` already exists and no update mode was requested, the scripts reuse the local checkout without contacting the network, even if its remote is unavailable.
   if a target already points to the correct source, the scripts leave it in place without backup or replacement.
@@ -69,7 +69,7 @@ As a result, setting up a fresh Windows environment requires manual steps, and e
 
 - Bash script verification covers:
   missing `superpowers` clone, repository-local `skills/superpowers` link creation, existing clean checkout with no update requested, update mode fast-forward success, conflicting target backup, and idempotent rerun when links are already correct.
-- PowerShell script verification covers the equivalent Windows hidden-directory cases plus successful `superpowers` junction creation.
+- PowerShell script verification covers the equivalent Windows hidden-directory cases plus successful `superpowers` junction creation and downstream file-target sync semantics when hard-link fallback is used.
 - Error-path verification covers:
   missing `git`, existing non-git `superpowers` path, dirty checkout during update mode, and update failure when fast-forward is not possible.
 - Repository docs are updated so a user can discover the one-command sync flow, the optional `superpowers` update mode, the hidden-directory target layout, and the Windows PowerShell entrypoint without reading the script source.

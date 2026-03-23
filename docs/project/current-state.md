@@ -15,9 +15,11 @@
   - `.copilot/copilot-instructions.md`, `.copilot/skills`, `.copilot/AGENTS.md`
   - `.codex/AGENTS.md`, `.codex/config.toml`, `.codex/agents`, `.codex/skills/skills`
 - The PowerShell implementation mirrors the same hidden-directory mapping except for `statusline-command.sh`, which remains Bash-only by user choice.
-- Regression coverage currently lives in [`tests/sync-agent-links/test-sync-agent-links.sh`](/Users/cory/.coding-cli/tests/sync-agent-links/test-sync-agent-links.sh). A companion PowerShell check script exists at [`tests/sync-agent-links/test-sync-agent-links.ps1`](/Users/cory/.coding-cli/tests/sync-agent-links/test-sync-agent-links.ps1), but it has not been executed in this macOS session because `pwsh` is unavailable here.
+- On Windows, the PowerShell sync now falls back to hard links for file targets when file symlink privilege is unavailable, while directory targets still fall back to junctions.
+- Fresh Windows prompt/skill sync evidence is recorded in [`artifacts/sync-agent-links/2026-03-23-windows-prompt-skill-sync.md`](/Users/cory/.coding-cli/artifacts/sync-agent-links/2026-03-23-windows-prompt-skill-sync.md).
+- Regression coverage currently lives in [`tests/sync-agent-links/test-sync-agent-links.sh`](/Users/cory/.coding-cli/tests/sync-agent-links/test-sync-agent-links.sh) and [`tests/sync-agent-links/test-sync-agent-links.ps1`](/Users/cory/.coding-cli/tests/sync-agent-links/test-sync-agent-links.ps1). The PowerShell harness now checks downstream prompt files for live-link behavior too, but the full clone/update fixture-remote path is still blocked in this environment by a Git for Windows `sh.exe` signal-pipe failure.
 
 ## Follow-Up
 
-- Run the new PowerShell sync flow on a real Windows machine and capture the first junction/symlink verification evidence.
+- Run the remaining PowerShell clone/update regression path on a Windows machine where the local fixture remote can be cloned and pushed without the Git for Windows `sh.exe` failure.
 - If Windows-specific path quirks appear in Codex/Claude app builds, fold those observed paths back into the sync docs before expanding scope further.

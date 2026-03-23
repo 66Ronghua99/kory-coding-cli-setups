@@ -32,6 +32,39 @@ function Invoke-Step {
     & $Action
 }
 
+function Invoke-Native {
+    param(
+        [string]$FilePath,
+        [string[]]$Arguments
+    )
+
+    $label = ($FilePath + " " + (($Arguments | ForEach-Object {
+        if ($_ -match '\s') {
+            '"' + $_ + '"'
+        } else {
+            $_
+        }
+    }) -join " ")).Trim()
+
+    if ($DryRun) {
+        Write-Host "[dry-run] $label"
+        return @()
+    }
+
+    $output = & $FilePath @Arguments 2>&1
+    $exitCode = $LASTEXITCODE
+    if ($exitCode -ne 0) {
+        $details = ($output | ForEach-Object { "$_" }) -join [Environment]::NewLine
+        if ([string]::IsNullOrWhiteSpace($details)) {
+            throw "Command failed ($exitCode): $label"
+        }
+
+        throw "Command failed ($exitCode): $label`n$details"
+    }
+
+    return $output
+}
+
 function Ensure-Dir {
     param([string]$Path)
     if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
@@ -39,12 +72,70 @@ function Ensure-Dir {
     }
 }
 
+function Normalize-ComparablePath {
+    param([string]$Path)
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        return $null
+    }
+
+    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    return $fullPath.TrimEnd('\', '/').ToLowerInvariant()
+}
+
+function Get-BackupRelativePath {
+    param([string]$Path)
+
+    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    $root = [System.IO.Path]::GetPathRoot($fullPath)
+    if ([string]::IsNullOrWhiteSpace($root)) {
+        return $fullPath.TrimStart('\', '/')
+    }
+
+    $rootLabel = ($root -replace '[:\\\/]+', '').Trim()
+    if ([string]::IsNullOrWhiteSpace($rootLabel)) {
+        $rootLabel = "root"
+    }
+
+    $relative = $fullPath.Substring($root.Length).TrimStart('\', '/')
+    if ([string]::IsNullOrWhiteSpace($relative)) {
+        return $rootLabel
+    }
+
+    return Join-Path $rootLabel $relative
+}
+
+function Test-SameVolume {
+    param(
+        [string]$LeftPath,
+        [string]$RightPath
+    )
+
+    $leftRoot = [System.IO.Path]::GetPathRoot([System.IO.Path]::GetFullPath($LeftPath))
+    $rightRoot = [System.IO.Path]::GetPathRoot([System.IO.Path]::GetFullPath($RightPath))
+    return [string]::Equals($leftRoot, $rightRoot, [System.StringComparison]::OrdinalIgnoreCase)
+}
+
+function Resolve-GitRemoteUrl {
+    param([string]$RemoteUrl)
+
+    if ([string]::IsNullOrWhiteSpace($RemoteUrl)) {
+        return $RemoteUrl
+    }
+
+    if ($RemoteUrl -match '^[a-zA-Z]:[\\/]') {
+        return ([System.Uri]([System.IO.Path]::GetFullPath($RemoteUrl))).AbsoluteUri
+    }
+
+    return $RemoteUrl
+}
+
 function Backup-Path {
     param([string]$Target)
 
     if (Test-Path -LiteralPath $Target) {
         Ensure-Dir $BackupRoot
-        $relative = $Target.TrimStart('\').TrimStart('/')
+        $relative = Get-BackupRelativePath $Target
         $backupTarget = Join-Path $BackupRoot $relative
         Ensure-Dir (Split-Path -Parent $backupTarget)
         Invoke-Step "move $Target -> $backupTarget" { Move-Item -LiteralPath $Target -Destination $backupTarget }
@@ -91,9 +182,10 @@ function Ensure-FileSymlink {
 
     Ensure-Dir (Split-Path -Parent $Target)
 
-    $current = Get-LinkTarget $Target
-    if ($current -eq $Source) {
-        Log "OK symlink: $Target -> $Source"
+    $normalizedSource = Normalize-ComparablePath $Source
+    $current = Normalize-ComparablePath (Get-LinkTarget $Target)
+    if ($current -eq $normalizedSource) {
+        Log "OK file link: $Target -> $Source"
         return
     }
 
@@ -101,9 +193,20 @@ function Ensure-FileSymlink {
         Backup-Path $Target
     }
 
-    Invoke-Step "symlink $Target -> $Source" {
-        New-Item -ItemType SymbolicLink -Path $Target -Target $Source | Out-Null
+    try {
+        Invoke-Step "file symlink $Target -> $Source" {
+            New-Item -ItemType SymbolicLink -Path $Target -Target $Source | Out-Null
+        }
+    } catch {
+        if (-not (Test-SameVolume -LeftPath $Source -RightPath $Target)) {
+            throw
+        }
+
+        Invoke-Step "hardlink $Target -> $Source" {
+            New-Item -ItemType HardLink -Path $Target -Target $Source | Out-Null
+        }
     }
+
     Log "Linked $Target -> $Source"
 }
 
@@ -115,8 +218,9 @@ function Ensure-DirectoryLink {
 
     Ensure-Dir (Split-Path -Parent $Target)
 
-    $current = Get-LinkTarget $Target
-    if ($current -eq $Source) {
+    $normalizedSource = Normalize-ComparablePath $Source
+    $current = Normalize-ComparablePath (Get-LinkTarget $Target)
+    if ($current -eq $normalizedSource) {
         Log "OK directory link: $Target -> $Source"
         return
     }
@@ -130,9 +234,7 @@ function Ensure-DirectoryLink {
             New-Item -ItemType SymbolicLink -Path $Target -Target $Source | Out-Null
         }
     } catch {
-        Invoke-Step "junction $Target -> $Source" {
-            cmd /c "mklink /J `"$Target`" `"$Source`"" | Out-Null
-        }
+        Invoke-Native -FilePath "cmd.exe" -Arguments @("/c", "mklink /J `"$Target`" `"$Source`"") | Out-Null
     }
 
     Log "Linked $Target -> $Source"
@@ -145,21 +247,19 @@ function Require-Git {
 }
 
 function Ensure-SuperpowersRepo {
+    $cloneRemote = Resolve-GitRemoteUrl $SuperpowersRemoteUrl
+
     if (-not (Test-Path -LiteralPath $SuperpowersDir)) {
         Require-Git
         Ensure-Dir (Split-Path -Parent $SuperpowersDir)
-        Invoke-Step "git clone $SuperpowersRemoteUrl $SuperpowersDir" {
-            git clone $SuperpowersRemoteUrl $SuperpowersDir | Out-Null
-        }
+        Invoke-Native -FilePath "git" -Arguments @("clone", $cloneRemote, $SuperpowersDir) | Out-Null
         Log "Cloned superpowers into $SuperpowersDir"
         return
     }
 
     if ((Test-Path -LiteralPath $SuperpowersDir -PathType Container) -and -not (Get-ChildItem -LiteralPath $SuperpowersDir -Force | Select-Object -First 1)) {
         Require-Git
-        Invoke-Step "git clone $SuperpowersRemoteUrl $SuperpowersDir" {
-            git clone $SuperpowersRemoteUrl $SuperpowersDir | Out-Null
-        }
+        Invoke-Native -FilePath "git" -Arguments @("clone", $cloneRemote, $SuperpowersDir) | Out-Null
         Log "Cloned superpowers into empty directory $SuperpowersDir"
         return
     }
@@ -176,14 +276,14 @@ function Update-SuperpowersRepo {
 
     Require-Git
 
-    $status = git -C $SuperpowersDir status --porcelain
+    $status = (Invoke-Native -FilePath "git" -Arguments @("-C", $SuperpowersDir, "status", "--porcelain")) -join [Environment]::NewLine
     if ($status) {
         throw "Superpowers checkout has uncommitted changes: $SuperpowersDir"
     }
 
     $headOk = $true
     try {
-        git -C $SuperpowersDir symbolic-ref --quiet HEAD | Out-Null
+        Invoke-Native -FilePath "git" -Arguments @("-C", $SuperpowersDir, "symbolic-ref", "--quiet", "HEAD") | Out-Null
     } catch {
         $headOk = $false
     }
@@ -193,17 +293,13 @@ function Update-SuperpowersRepo {
 
     $upstream = $null
     try {
-        $upstream = (git -C $SuperpowersDir rev-parse --abbrev-ref --symbolic-full-name "@{upstream}").Trim()
+        $upstream = ((Invoke-Native -FilePath "git" -Arguments @("-C", $SuperpowersDir, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}")) -join [Environment]::NewLine).Trim()
     } catch {
         throw "Superpowers checkout has no configured upstream branch: $SuperpowersDir"
     }
 
-    Invoke-Step "git fetch --prune" {
-        git -C $SuperpowersDir fetch --prune | Out-Null
-    }
-    Invoke-Step "git merge --ff-only $upstream" {
-        git -C $SuperpowersDir merge --ff-only $upstream | Out-Null
-    }
+    Invoke-Native -FilePath "git" -Arguments @("-C", $SuperpowersDir, "fetch", "--prune") | Out-Null
+    Invoke-Native -FilePath "git" -Arguments @("-C", $SuperpowersDir, "merge", "--ff-only", $upstream) | Out-Null
     Log "Updated superpowers from $upstream"
 }
 
