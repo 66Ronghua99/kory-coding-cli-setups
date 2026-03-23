@@ -1,0 +1,375 @@
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+To /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/superpowers-remote/remote.git
+ * [new branch]      main -> main
+Source directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source
+Superpowers directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source/superpowers
+Backup directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/home/.coding-cli-sync-backups/20260323_181805
+Cloning into '/var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source/superpowers'...
+done.
+Cloned superpowers into /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source/superpowers
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source/skills/superpowers -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source/superpowers/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/home/.claude/CLAUDE.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/home/.claude/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/home/.claude/settings.json -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source/settings.json
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/home/.claude/statusline-command.sh -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source/statusline-command.sh
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/home/.gemini/GEMINI.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/home/.gemini/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/home/.copilot/copilot-instructions.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/home/.copilot/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/home/.copilot/AGENTS.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source/AGENTS.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/home/.codex/AGENTS.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source/AGENTS.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/home/.codex/config.toml -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source/.codex/config.toml
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/home/.codex/agents -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source/.codex/agents
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/home/.codex/skills/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.GSmmYZBOze/source/skills
+Sync complete.
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+To /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/superpowers-remote/remote.git
+ * [new branch]      main -> main
+Source directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source
+Superpowers directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/superpowers
+Backup directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.coding-cli-sync-backups/20260323_181805
+Cloning into '/var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/superpowers'...
+done.
+Cloned superpowers into /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/superpowers
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/skills/superpowers -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/superpowers/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.claude/CLAUDE.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.claude/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.claude/settings.json -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/settings.json
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.claude/statusline-command.sh -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/statusline-command.sh
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.gemini/GEMINI.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.gemini/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.copilot/copilot-instructions.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.copilot/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.copilot/AGENTS.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/AGENTS.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.codex/AGENTS.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/AGENTS.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.codex/config.toml -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/.codex/config.toml
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.codex/agents -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/.codex/agents
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.codex/skills/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/skills
+Sync complete.
+To /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/superpowers-remote/remote.git
+   674cca7..dabd4e4  main -> main
+Source directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source
+Superpowers directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/superpowers
+Backup directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.coding-cli-sync-backups/20260323_181805
+From /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/superpowers-remote/remote
+   674cca7..dabd4e4  main       -> origin/main
+Updating 674cca7..dabd4e4
+Fast-forward
+ skills/using-superpowers/UPDATED.md | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 skills/using-superpowers/UPDATED.md
+Updated superpowers from origin/main
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/skills/superpowers -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/superpowers/skills
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.claude/CLAUDE.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/CLAUDE.md
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.claude/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/skills
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.claude/settings.json -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/settings.json
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.claude/statusline-command.sh -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/statusline-command.sh
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.gemini/GEMINI.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/CLAUDE.md
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.gemini/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/skills
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.copilot/copilot-instructions.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/CLAUDE.md
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.copilot/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/skills
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.copilot/AGENTS.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/AGENTS.md
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.codex/AGENTS.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/AGENTS.md
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.codex/config.toml -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/.codex/config.toml
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.codex/agents -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/.codex/agents
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/home/.codex/skills/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.s2a8PPO7TU/source/skills
+Sync complete.
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+To /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/superpowers-remote/remote.git
+ * [new branch]      main -> main
+Source directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source
+Superpowers directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source/superpowers
+Backup directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/home/.coding-cli-sync-backups/20260323_181806
+Cloning into '/var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source/superpowers'...
+done.
+Cloned superpowers into /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source/superpowers
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source/skills/superpowers -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source/superpowers/skills
+Backed up /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/home/.claude/CLAUDE.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/home/.coding-cli-sync-backups/20260323_181806/var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/home/.claude/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/home/.claude/CLAUDE.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/home/.claude/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/home/.claude/settings.json -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source/settings.json
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/home/.claude/statusline-command.sh -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source/statusline-command.sh
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/home/.gemini/GEMINI.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/home/.gemini/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/home/.copilot/copilot-instructions.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/home/.copilot/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/home/.copilot/AGENTS.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source/AGENTS.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/home/.codex/AGENTS.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source/AGENTS.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/home/.codex/config.toml -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source/.codex/config.toml
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/home/.codex/agents -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source/.codex/agents
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/home/.codex/skills/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OS49ZSkxJl/source/skills
+Sync complete.
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+To /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/superpowers-remote/remote.git
+ * [new branch]      main -> main
+Source directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source
+Superpowers directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/superpowers
+Backup directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.coding-cli-sync-backups/20260323_181806
+Cloning into '/var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/superpowers'...
+done.
+Cloned superpowers into /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/superpowers
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/skills/superpowers -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/superpowers/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.claude/CLAUDE.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.claude/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.claude/settings.json -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/settings.json
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.claude/statusline-command.sh -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/statusline-command.sh
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.gemini/GEMINI.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.gemini/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.copilot/copilot-instructions.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.copilot/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.copilot/AGENTS.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/AGENTS.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.codex/AGENTS.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/AGENTS.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.codex/config.toml -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/.codex/config.toml
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.codex/agents -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/.codex/agents
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.codex/skills/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/skills
+Sync complete.
+Source directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source
+Superpowers directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/superpowers
+Backup directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.coding-cli-sync-backups/20260323_181806
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/skills/superpowers -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/superpowers/skills
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.claude/CLAUDE.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/CLAUDE.md
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.claude/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/skills
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.claude/settings.json -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/settings.json
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.claude/statusline-command.sh -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/statusline-command.sh
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.gemini/GEMINI.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/CLAUDE.md
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.gemini/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/skills
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.copilot/copilot-instructions.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/CLAUDE.md
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.copilot/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/skills
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.copilot/AGENTS.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/AGENTS.md
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.codex/AGENTS.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/AGENTS.md
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.codex/config.toml -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/.codex/config.toml
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.codex/agents -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/.codex/agents
+OK symlink: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/home/.codex/skills/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.5KShq8y1hC/source/skills
+Sync complete.
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+To /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.OYnoYctbje/superpowers-remote/remote.git
+ * [new branch]      main -> main
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+To /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.KoPQDvkXnk/superpowers-remote/remote.git
+ * [new branch]      main -> main
+Source directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.KoPQDvkXnk/source
+Superpowers directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.KoPQDvkXnk/source/superpowers
+Backup directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.KoPQDvkXnk/home/.coding-cli-sync-backups/20260323_181807
+Error: Existing superpowers path is not a git repository: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.KoPQDvkXnk/source/superpowers
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+To /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/superpowers-remote/remote.git
+ * [new branch]      main -> main
+Source directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source
+Superpowers directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/superpowers
+Backup directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/home/.coding-cli-sync-backups/20260323_181807
+Cloning into '/var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/superpowers'...
+done.
+Cloned superpowers into /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/superpowers
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/skills/superpowers -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/superpowers/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/home/.claude/CLAUDE.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/home/.claude/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/home/.claude/settings.json -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/settings.json
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/home/.claude/statusline-command.sh -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/statusline-command.sh
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/home/.gemini/GEMINI.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/home/.gemini/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/home/.copilot/copilot-instructions.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/home/.copilot/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/home/.copilot/AGENTS.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/AGENTS.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/home/.codex/AGENTS.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/AGENTS.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/home/.codex/config.toml -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/.codex/config.toml
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/home/.codex/agents -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/.codex/agents
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/home/.codex/skills/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/skills
+Sync complete.
+Source directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source
+Superpowers directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/superpowers
+Backup directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/home/.coding-cli-sync-backups/20260323_181807
+Error: Superpowers checkout has uncommitted changes: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.o09PXBuDnB/source/superpowers
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+To /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/superpowers-remote/remote.git
+ * [new branch]      main -> main
+Source directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source
+Superpowers directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/superpowers
+Backup directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/home/.coding-cli-sync-backups/20260323_181808
+Cloning into '/var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/superpowers'...
+done.
+Cloned superpowers into /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/superpowers
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/skills/superpowers -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/superpowers/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/home/.claude/CLAUDE.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/home/.claude/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/home/.claude/settings.json -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/settings.json
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/home/.claude/statusline-command.sh -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/statusline-command.sh
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/home/.gemini/GEMINI.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/home/.gemini/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/home/.copilot/copilot-instructions.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/CLAUDE.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/home/.copilot/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/skills
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/home/.copilot/AGENTS.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/AGENTS.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/home/.codex/AGENTS.md -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/AGENTS.md
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/home/.codex/config.toml -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/.codex/config.toml
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/home/.codex/agents -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/.codex/agents
+Linked /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/home/.codex/skills/skills -> /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/skills
+Sync complete.
+To /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/superpowers-remote/remote.git
+   b5d274d..f764f28  main -> main
+Source directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source
+Superpowers directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/source/superpowers
+Backup directory: /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/home/.coding-cli-sync-backups/20260323_181808
+From /var/folders/j5/sqdqhyk53tn9xjn4ct7vyb100000gp/T/tmp.vXq5gLBVi7/superpowers-remote/remote
+   b5d274d..f764f28  main       -> origin/main
+hint: Diverging branches can't be fast-forwarded, you need to either:
+hint:
+hint: 	git merge --no-ff
+hint:
+hint: or:
+hint:
+hint: 	git rebase
+hint:
+hint: Disable this message with "git config set advice.diverging false"
+fatal: Not possible to fast-forward, aborting.
+PASS: sync-agent-links regression checks
