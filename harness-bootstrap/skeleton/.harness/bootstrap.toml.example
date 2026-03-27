@@ -7,6 +7,21 @@ templates_dir = "docs/superpowers/templates"
 doc_health_skill = "harness:doc-health"
 lint_test_skill = "harness:lint-test-design"
 
+[governance.refactor_route]
+preferred = true
+path_hints = [
+  "*/composition*",
+  "*/workflow*",
+  "*/shell*",
+]
+change_kinds = [
+  "create",
+  "move",
+  "rename",
+  "ownership-change",
+  "boundary-surface",
+]
+
 [governance.refactor_gate]
 enabled = false
 trigger = "commit"
@@ -18,11 +33,14 @@ artifact_dir = "superpowers/artifacts/refactor-gate"
 [governance.lint_test_route]
 preferred = true
 intents = [
-  "lint design",
-  "test design",
-  "invariant design",
-  "guardrail design",
   "coverage policy",
-  "naming rules",
   "file-role rules",
+  "guardrail design",
+  "invariant design",
+]
+finding_hints = [
+  "recurring-boundary-finding",
+  "mechanizable-edge",
+  "coverage-gap",
+  "exception-ratchet",
 ]

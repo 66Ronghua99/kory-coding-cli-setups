@@ -17,11 +17,12 @@ NEXT_STEP.md
 MEMORY.md
 AGENT_INDEX.md（项目根优先，兜底为 /Users/cory/.coding-cli/AGENT_INDEX.md）
 .harness/bootstrap.toml（若存在）
+PROJECT_LOGS.md（仅在项目级 inspect / 复盘 / 方向追溯 / 历史决策争议时按需读取）
 ```
 
 - 若项目缺少根级 `AGENTS.md`，先补最小版本再继续。
-- 若缺少 `PROGRESS.md`、`MEMORY.md`、`NEXT_STEP.md`，先补最小骨架再继续。
-- 在路由和当前状态不清晰前，不允许直接编码。
+- 若缺少 `PROGRESS.md`、`PROJECT_LOGS.md`、`MEMORY.md`、`NEXT_STEP.md`，先补最小骨架再继续。
+- 在路由、当前执行指针与 active spec / plan 不清晰前，不允许直接编码。
 
 ### 1.2 Superpowers Skill Set 为默认执行入口
 - 每次代码工程对话默认先进入 `using-superpowers`。
@@ -56,7 +57,8 @@ AGENT_INDEX.md（项目根优先，兜底为 /Users/cory/.coding-cli/AGENT_INDEX
 ### 1.4 文档与实现强制同构
 - `AGENTS.md`：静态政策、目录入口、边界说明
 - `AGENT_INDEX.md`：任务路由与 agent / skill 选择
-- `PROGRESS.md`：当前里程碑、TODO、DONE、参考入口
+- `PROGRESS.md`：项目状态面板，只记录当前基线、活跃主线、项目级风险、最近完成闭环与参考入口
+- `PROJECT_LOGS.md`：append-only 项目流水账，记录决策、尝试、推翻、转向与验证轨迹
 - `MEMORY.md`：可复用经验、易踩坑、稳定边界
 - `NEXT_STEP.md`：唯一下一步执行指针
 - `.harness/bootstrap.toml`：仓库 bootstrap 与治理模型的机器可读 source of truth（若存在）
@@ -75,7 +77,8 @@ AGENT_INDEX.md（项目根优先，兜底为 /Users/cory/.coding-cli/AGENT_INDEX
 
 ## 2. Standard Superpowers Workflow
 1. Route
-- 读取 `PROGRESS.md -> NEXT_STEP.md -> MEMORY.md -> AGENT_INDEX.md -> .harness/bootstrap.toml（若存在）`
+- 默认读取 `PROGRESS.md -> NEXT_STEP.md -> MEMORY.md -> AGENT_INDEX.md -> .harness/bootstrap.toml（若存在）`
+- 需要追溯历史决策、尝试和转向时再读取 `PROJECT_LOGS.md`
 - 加载 `using-superpowers`
 - 由项目 `AGENT_INDEX.md` 决定当前任务应走的 agent / skill
 
@@ -100,19 +103,22 @@ AGENT_INDEX.md（项目根优先，兜底为 /Users/cory/.coding-cli/AGENT_INDEX
 
 6. Finish And Sync Back
 - 使用 `finishing-a-development-branch` 完成分支/工作区收尾
-- 回写 `PROGRESS.md`、`MEMORY.md`、`NEXT_STEP.md`、plan checklist 与证据路径
+- 回写 `PROGRESS.md`（仅在项目状态面板发生变化时）、`MEMORY.md`、`NEXT_STEP.md`、plan checklist 与证据路径
+- 追加 `PROJECT_LOGS.md`，记录本次任务中的决策、尝试、推翻、方向调整与验证结果
 - `NEXT_STEP.md` 永远只保留一条直接可执行指针
 
 ## 3. Context Loading Protocol
 - L0：`PROGRESS.md -> NEXT_STEP.md -> MEMORY.md -> AGENT_INDEX.md -> .harness/bootstrap.toml（若存在）`
 - L1：当前 Active spec + 当前 Active plan / checklist
-- L2：历史 specs / plans，仅用于回归、审计、验收口径争议
+- L2：`PROJECT_LOGS.md` + 历史 specs / plans，仅用于项目级 inspect、复盘、方向追溯、回归、审计、验收口径争议
 
 触发 L1 / L2 的常见条件：
 - 跨模块改造
 - 公共契约变化
 - 验收标准漂移
 - 回归问题追根溯源
+- 需要理解为何某条技术路线被推翻
+- 需要回看过去多轮方向调整
 
 ## 4. Project Context Governance
 - 每个代码仓库都应有一个根级 `AGENTS.md`
@@ -137,7 +143,7 @@ AGENT_INDEX.md（项目根优先，兜底为 /Users/cory/.coding-cli/AGENT_INDEX
 - 应走的 superpowers skill path 已实际执行
 - 有新鲜的验证证据
 - 审查意见已修复，或明确记录延期理由
-- `PROGRESS.md`、`MEMORY.md`、`NEXT_STEP.md` 与 checklist 已同步
+- `PROGRESS.md`、`PROJECT_LOGS.md`、`MEMORY.md`、`NEXT_STEP.md` 与 checklist 已同步
 
 ## 7. Handoff Format
 每次交付至少要说明：
@@ -154,6 +160,7 @@ AGENT_INDEX.md（项目根优先，兜底为 /Users/cory/.coding-cli/AGENT_INDEX
 - 读取 MEMORY.md
 - 读取 AGENT_INDEX.md（项目根优先，共享兜底其次）
 - 若存在则读取 .harness/bootstrap.toml
+- 如需历史决策追溯再读取 PROJECT_LOGS.md
 - 加载 using-superpowers
 - 按路由进入对应 process skill
 ```
@@ -162,5 +169,7 @@ AGENT_INDEX.md（项目根优先，兜底为 /Users/cory/.coding-cli/AGENT_INDEX
 ```text
 - 运行 review 与 verification
 - 对齐文档与证据
+- 在 PROJECT_LOGS.md 追加本次任务流水
+- 如项目状态面板已变化则更新 PROGRESS.md
 - 更新 NEXT_STEP.md 为唯一下一步指针
 ```

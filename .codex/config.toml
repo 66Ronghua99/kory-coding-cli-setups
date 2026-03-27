@@ -3,7 +3,7 @@
 model = "gpt-5.4"
 model_provider = "openai"
 model_reasoning_effort = "high"
-approval_policy = "on-request"
+approval_policy = "on-failure"
 sandbox_mode = "workspace-write"
 personality = "friendly"
 
@@ -50,3 +50,6 @@ trust_level = "trusted"
 [mcp_servers.playwright]
 args = ["@playwright/mcp@latest"]
 command = "npx"
+
+[sandbox_workspace_write]
+network_access = true
