@@ -1,6 +1,6 @@
 ---
 name: harness:lint-test-design
-description: Use when repository structure, ownership seams, coverage rules, or boundary rules need lint or test proof.
+description: You MUST use this when writing lint or test rules for repository structure, ownership seams, coverage rules, or boundary rules.
 ---
 
 # harness:lint-test-design

@@ -1,6 +1,6 @@
 ---
 name: harness:refactor
-description: Use when boundary or ownership drift, recurring cleanup hotspots, or repository-declared commit-time refactor review require targeted architecture guidance.
+description: You MUST use this before declaring finishing any code changes. Use it to examine boundary or ownership drift, recurring cleanup hotspots, or repository-declared commit-time refactor review require targeted architecture guidance.
 ---
 
 # harness:refactor

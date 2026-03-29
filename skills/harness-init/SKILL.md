@@ -1,6 +1,6 @@
 ---
 name: harness:init
-description: Use when entering a repository that needs the Harness governance baseline, project indexes, bootstrap manifest, and templates before design or implementation work begins.
+description: Users only proactively use this when entering a repository that needs the Harness governance baseline, project indexes, bootstrap manifest, and templates before design or implementation work begins.
 ---
 
 # harness:init
