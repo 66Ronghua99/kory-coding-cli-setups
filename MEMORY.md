@@ -11,8 +11,8 @@
 - `harness:refactor` owns architecture-drift review and refactor governance.
 - `NEXT_STEP.md` is a pointer-only file; if no follow-up task exists after completion, it should be cleared instead of carrying stale prose.
 - `PROGRESS.md` is an accumulating execution summary, not a mandatory read on every coding turn.
-- The shared `skills` directory remains the downstream sync unit for agent homes; `superpowers` is exposed by keeping [`skills/superpowers`](/Users/cory/.coding-cli/skills/superpowers) pointed at [`superpowers/skills`](/Users/cory/.coding-cli/superpowers/skills).
-- `superpowers` should be modeled as a Git submodule, while `skills/superpowers` stays a generated local link and must not be tracked in the parent repository.
+- The shared `skills` directory remains the downstream sync unit for agent homes; `superpowers` is exposed through a curated generated set of top-level links under [`skills/`](/Users/cory/.coding-cli/skills), not through a nested `skills/superpowers` namespace.
+- `superpowers` sync is owned by [`sync-agent-links.sh`](/Users/cory/.coding-cli/sync-agent-links.sh) and [`sync-agent-links.ps1`](/Users/cory/.coding-cli/sync-agent-links.ps1): they clone or fast-forward the checkout and regenerate the curated top-level links as local, ignored artifacts.
 - `sync-agent-links.sh` is the macOS/Linux source of truth for the target mapping, and [`sync-agent-links.ps1`](/Users/cory/.coding-cli/sync-agent-links.ps1) mirrors that behavior for Windows hidden directories under `%USERPROFILE%`.
 - On Windows, `sync-agent-links.ps1` falls back to hard links for file targets like `CLAUDE.md`, `AGENTS.md`, and `config.toml` when symbolic-link privilege is unavailable; directory targets still fall back to junctions.
 - Windows backup paths must be normalized under `.coding-cli-sync-backups/<timestamp>/<drive>/...`; appending raw absolute paths creates invalid or misleading backup destinations.

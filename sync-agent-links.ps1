@@ -1,6 +1,5 @@
 param(
-    [switch]$DryRun,
-    [switch]$UpdateSuperpowers
+    [switch]$DryRun
 )
 
 Set-StrictMode -Version Latest
@@ -9,8 +8,17 @@ $ErrorActionPreference = "Stop"
 $SourceDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $TargetHome = if ($env:SYNC_HOME) { $env:SYNC_HOME } elseif ($env:USERPROFILE) { $env:USERPROFILE } else { throw "USERPROFILE is not set." }
 $SuperpowersDir = if ($env:SUPERPOWERS_DIR) { $env:SUPERPOWERS_DIR } else { Join-Path $SourceDir "superpowers" }
-$SuperpowersSkillsLink = if ($env:SUPERPOWERS_SKILLS_LINK) { $env:SUPERPOWERS_SKILLS_LINK } else { Join-Path (Join-Path $SourceDir "skills") "superpowers" }
+$SuperpowersRemoteUrl = if ($env:SUPERPOWERS_REMOTE_URL) { $env:SUPERPOWERS_REMOTE_URL } else { "https://github.com/obra/superpowers.git" }
+$SuperpowersBranch = if ($env:SUPERPOWERS_BRANCH) { $env:SUPERPOWERS_BRANCH } else { "main" }
 $BackupRoot = Join-Path $TargetHome (".coding-cli-sync-backups\" + (Get-Date -Format "yyyyMMdd_HHmmss"))
+$CuratedSuperpowersSkills = @(
+    "using-superpowers",
+    "brainstorming",
+    "writing-plans",
+    "executing-plans",
+    "test-driven-development",
+    "verification-before-completion"
+)
 
 function Log {
     param([string]$Message)
@@ -223,52 +231,74 @@ function Ensure-DirectoryLink {
 }
 
 function Ensure-SuperpowersRepo {
-    if (-not (Test-Path -LiteralPath $SuperpowersDir)) {
-        throw "Missing superpowers checkout: $SuperpowersDir. Run 'git submodule update --init --recursive'."
+    if ([string]::IsNullOrWhiteSpace($SuperpowersRemoteUrl)) {
+        throw "Missing superpowers remote. Set SUPERPOWERS_REMOTE_URL or restore the default."
     }
 
-    if (-not (Test-Path -LiteralPath (Join-Path $SuperpowersDir ".git"))) {
+    if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+        throw "git is required to sync superpowers"
+    }
+
+    if (-not (Test-Path -LiteralPath $SuperpowersDir)) {
+        Ensure-Dir (Split-Path -Parent $SuperpowersDir)
+        Invoke-Step "git clone $SuperpowersRemoteUrl -> $SuperpowersDir" {
+            git clone --branch $SuperpowersBranch --single-branch $SuperpowersRemoteUrl $SuperpowersDir | Out-Null
+        }
+    } elseif (-not (Test-Path -LiteralPath (Join-Path $SuperpowersDir ".git"))) {
         throw "Existing superpowers path is not a git repository: $SuperpowersDir"
+    } else {
+        Invoke-Step "git checkout $SuperpowersBranch in $SuperpowersDir" {
+            git -C $SuperpowersDir checkout $SuperpowersBranch | Out-Null
+        }
+        Invoke-Step "git pull --ff-only origin $SuperpowersBranch in $SuperpowersDir" {
+            git -C $SuperpowersDir pull --ff-only origin $SuperpowersBranch | Out-Null
+        }
     }
 
     if (-not (Test-Path -LiteralPath (Join-Path $SuperpowersDir "skills") -PathType Container)) {
-        throw "Missing superpowers skills directory: $SuperpowersDir\skills. Run 'git submodule update --init --recursive'."
+        throw "Missing superpowers skills directory: $SuperpowersDir\skills."
     }
 }
 
-function Ensure-SuperpowersSkillsLink {
-    Ensure-DirectoryLink -Source (Join-Path $SuperpowersDir "skills") -Target $SuperpowersSkillsLink
+function Cleanup-LegacySuperpowersNamespace {
+    $legacyPath = Join-Path (Join-Path $SourceDir "skills") "superpowers"
+    if (Test-Path -LiteralPath $legacyPath) {
+        Backup-Path $legacyPath
+    }
 }
 
-function Cleanup-CodexSkillOverrides {
+function Ensure-CuratedSuperpowersSkills {
+    $skillsDir = Join-Path $SourceDir "skills"
+    Ensure-Dir $skillsDir
+    Cleanup-LegacySuperpowersNamespace
+
+    foreach ($skill in $CuratedSuperpowersSkills) {
+        $sourceSkill = Join-Path (Join-Path $SuperpowersDir "skills") $skill
+        if (-not (Test-Path -LiteralPath $sourceSkill -PathType Container)) {
+            throw "Missing curated superpowers skill: $sourceSkill"
+        }
+
+        Ensure-DirectoryLink -Source $sourceSkill -Target (Join-Path $skillsDir $skill)
+    }
+}
+
+function Ensure-CodexSkillLinks {
     $codexSkillsDir = Join-Path $TargetHome ".codex\skills"
-    if (-not (Test-Path -LiteralPath $codexSkillsDir -PathType Container)) {
-        return
-    }
+    Ensure-Dir $codexSkillsDir
 
-    Get-ChildItem -LiteralPath $codexSkillsDir -Force | ForEach-Object {
-        $name = $_.Name
-        if ($name -in @(".system", "skills")) {
-            return
-        }
-
-        $sourceSkill = Join-Path (Join-Path $SourceDir "skills") $name
-        if (Test-Path -LiteralPath $sourceSkill -PathType Container) {
-            Backup-Path $_.FullName
-        }
+    Get-ChildItem -LiteralPath (Join-Path $SourceDir "skills") -Force | ForEach-Object {
+        Ensure-DirectoryLink -Source $_.FullName -Target (Join-Path $codexSkillsDir $_.Name)
     }
 }
 
 Log "Source directory: $SourceDir"
 Log "Superpowers directory: $SuperpowersDir"
+Log "Superpowers remote: $SuperpowersRemoteUrl"
+Log "Superpowers branch: $SuperpowersBranch"
 Log "Backup directory: $BackupRoot"
 
-if ($UpdateSuperpowers) {
-    throw "--UpdateSuperpowers is no longer supported. Run 'git submodule update --remote superpowers' manually first."
-}
-
 Ensure-SuperpowersRepo
-Ensure-SuperpowersSkillsLink
+Ensure-CuratedSuperpowersSkills
 
 Ensure-FileSymlink -Source (Join-Path $SourceDir "CLAUDE.md") -Target (Join-Path $TargetHome ".claude\CLAUDE.md")
 Ensure-DirectoryLink -Source (Join-Path $SourceDir "skills") -Target (Join-Path $TargetHome ".claude\skills")
@@ -281,10 +311,9 @@ Ensure-FileSymlink -Source (Join-Path $SourceDir "CLAUDE.md") -Target (Join-Path
 Ensure-DirectoryLink -Source (Join-Path $SourceDir "skills") -Target (Join-Path $TargetHome ".copilot\skills")
 Ensure-FileSymlink -Source (Join-Path $SourceDir "AGENTS.md") -Target (Join-Path $TargetHome ".copilot\AGENTS.md")
 
-Cleanup-CodexSkillOverrides
 Ensure-FileSymlink -Source (Join-Path $SourceDir "AGENTS.md") -Target (Join-Path $TargetHome ".codex\AGENTS.md")
 Ensure-FileSymlink -Source (Join-Path $SourceDir ".codex\config.toml") -Target (Join-Path $TargetHome ".codex\config.toml")
 Ensure-DirectoryLink -Source (Join-Path $SourceDir ".codex\agents") -Target (Join-Path $TargetHome ".codex\agents")
-Ensure-DirectoryLink -Source (Join-Path $SourceDir "skills") -Target (Join-Path $TargetHome ".codex\skills\skills")
+Ensure-CodexSkillLinks
 
 Log "Sync complete."

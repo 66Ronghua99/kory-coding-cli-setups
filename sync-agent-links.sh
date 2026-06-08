@@ -3,9 +3,18 @@ set -euo pipefail
 
 SOURCE_DIR="$(cd "$(dirname "$0")" && pwd)"
 SUPERPOWERS_DIR="${SUPERPOWERS_DIR:-$SOURCE_DIR/superpowers}"
-SUPERPOWERS_SKILLS_LINK="${SUPERPOWERS_SKILLS_LINK:-$SOURCE_DIR/skills/superpowers}"
+SUPERPOWERS_REMOTE_URL="${SUPERPOWERS_REMOTE_URL:-https://github.com/obra/superpowers.git}"
+SUPERPOWERS_BRANCH="${SUPERPOWERS_BRANCH:-main}"
 BACKUP_ROOT="${HOME}/.coding-cli-sync-backups/$(date +%Y%m%d_%H%M%S)"
 DRY_RUN=0
+CURATED_SUPERPOWERS_SKILLS=(
+  using-superpowers
+  brainstorming
+  writing-plans
+  executing-plans
+  test-driven-development
+  verification-before-completion
+)
 
 log() {
   printf '%s\n' "$*"
@@ -38,9 +47,6 @@ parse_args() {
     case "$1" in
       --dry-run)
         DRY_RUN=1
-        ;;
-      --update-superpowers)
-        die "--update-superpowers is no longer supported; run 'git submodule update --remote superpowers' manually first"
         ;;
       *)
         die "Unknown argument: $1"
@@ -93,36 +99,51 @@ ensure_symlink() {
 }
 
 ensure_superpowers_repo() {
+  command -v git >/dev/null 2>&1 || die "git is required to sync superpowers"
+  [[ -n "$SUPERPOWERS_REMOTE_URL" ]] || die "Missing superpowers remote. Set SUPERPOWERS_REMOTE_URL or restore the default."
+
   if [[ ! -e "$SUPERPOWERS_DIR" ]]; then
-    die "Missing superpowers checkout: $SUPERPOWERS_DIR. Run 'git submodule update --init --recursive'."
-  fi
-
-  if [[ ! -e "$SUPERPOWERS_DIR/.git" ]]; then
+    ensure_dir "$(dirname "$SUPERPOWERS_DIR")"
+    run_cmd git clone --branch "$SUPERPOWERS_BRANCH" --single-branch "$SUPERPOWERS_REMOTE_URL" "$SUPERPOWERS_DIR"
+  elif [[ ! -e "$SUPERPOWERS_DIR/.git" ]]; then
     die "Existing superpowers path is not a git repository: $SUPERPOWERS_DIR"
+  else
+    run_cmd git -C "$SUPERPOWERS_DIR" checkout "$SUPERPOWERS_BRANCH"
+    run_cmd git -C "$SUPERPOWERS_DIR" pull --ff-only origin "$SUPERPOWERS_BRANCH"
   fi
 
-  [[ -d "$SUPERPOWERS_DIR/skills" ]] || die "Missing superpowers skills directory: $SUPERPOWERS_DIR/skills. Run 'git submodule update --init --recursive'."
+  [[ -d "$SUPERPOWERS_DIR/skills" ]] || die "Missing superpowers skills directory: $SUPERPOWERS_DIR/skills."
 }
 
-ensure_superpowers_skills_link() {
-  ensure_dir "$(dirname "$SUPERPOWERS_SKILLS_LINK")"
-  ensure_symlink "$SUPERPOWERS_DIR/skills" "$SUPERPOWERS_SKILLS_LINK"
+cleanup_legacy_superpowers_namespace() {
+  local legacy_path="$SOURCE_DIR/skills/superpowers"
+  if [[ -e "$legacy_path" || -L "$legacy_path" ]]; then
+    backup_path "$legacy_path"
+  fi
 }
 
-cleanup_codex_skill_overrides() {
+ensure_curated_superpowers_skills() {
+  ensure_dir "$SOURCE_DIR/skills"
+  cleanup_legacy_superpowers_namespace
+
+  local skill
+  for skill in "${CURATED_SUPERPOWERS_SKILLS[@]}"; do
+    local source_skill="$SUPERPOWERS_DIR/skills/$skill"
+    [[ -d "$source_skill" ]] || die "Missing curated superpowers skill: $source_skill"
+    ensure_symlink "$source_skill" "$SOURCE_DIR/skills/$skill"
+  done
+}
+
+ensure_codex_skills_links() {
   local codex_skills_dir="${HOME}/.codex/skills"
-  [[ -d "$codex_skills_dir" ]] || return 0
+  ensure_dir "$codex_skills_dir"
 
-  for path in "$codex_skills_dir"/*; do
+  local path
+  for path in "$SOURCE_DIR/skills"/*; do
     [[ -e "$path" || -L "$path" ]] || continue
     local name
     name="$(basename "$path")"
-    if [[ "$name" == ".system" || "$name" == "skills" ]]; then
-      continue
-    fi
-    if [[ -d "$SOURCE_DIR/skills/$name" ]]; then
-      backup_path "$path"
-    fi
+    ensure_symlink "$path" "$codex_skills_dir/$name"
   done
 }
 
@@ -131,10 +152,12 @@ main() {
 
   log "Source directory: $SOURCE_DIR"
   log "Superpowers directory: $SUPERPOWERS_DIR"
+  log "Superpowers remote: $SUPERPOWERS_REMOTE_URL"
+  log "Superpowers branch: $SUPERPOWERS_BRANCH"
   log "Backup directory: $BACKUP_ROOT"
 
   ensure_superpowers_repo
-  ensure_superpowers_skills_link
+  ensure_curated_superpowers_skills
 
   # Claude Code
   ensure_symlink "$SOURCE_DIR/CLAUDE.md" "${HOME}/.claude/CLAUDE.md"
@@ -152,11 +175,10 @@ main() {
   ensure_symlink "$SOURCE_DIR/AGENTS.md" "${HOME}/.copilot/AGENTS.md"
 
   # Codex
-  cleanup_codex_skill_overrides
   ensure_symlink "$SOURCE_DIR/AGENTS.md" "${HOME}/.codex/AGENTS.md"
   ensure_symlink "$SOURCE_DIR/.codex/config.toml" "${HOME}/.codex/config.toml"
   ensure_symlink "$SOURCE_DIR/.codex/agents" "${HOME}/.codex/agents"
-  ensure_symlink "$SOURCE_DIR/skills" "${HOME}/.codex/skills/skills"
+  ensure_codex_skills_links
 
   log "Sync complete."
 }
