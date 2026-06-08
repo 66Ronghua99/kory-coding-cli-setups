@@ -1,33 +1,36 @@
 # User-Level Collaboration AGENTS
 
 ## 0. North Star
-以下指南适用于所有**代码工程项目**。这个 user-level 文件的职责不是重复 Superpowers 的全部细节，而是强制项目工作走 `superpowers skill set` 的标准闭环，并用少量本地文档把项目状态、路由与验证证据固定下来。
+以下指南适用于所有**代码工程项目**。这个 user-level 文件的职责不是重复 Superpowers 的全部细节，而是把项目协作收敛到少量必要文档，并强制以 spec、plan、checklist 和新鲜验证证据作为执行真相。
 
-> 核心原则：**Superpowers First + 分形文档 + 证据先于结论**
+> 核心原则：**Superpowers First + 轻量文档骨架 + 证据先于结论**
 
 > !!非代码项目请忽略以下所有要求!!
 
 ## 1. Hard Rules
 
-### 1.1 编码前强制读取上下文
-每次进入代码工程任务前，先读取：
+### 1.1 编码前的默认上下文
+每次进入代码工程任务前，默认先读取：
 ```text
-PROGRESS.md
 NEXT_STEP.md
 MEMORY.md
-AGENT_INDEX.md（项目根优先，兜底为 /Users/cory/.coding-cli/AGENT_INDEX.md）
-.harness/bootstrap.toml（若存在）
-PROJECT_LOGS.md（仅在项目级 inspect / 复盘 / 方向追溯 / 历史决策争议时按需读取）
+```
+
+按需读取：
+```text
+PROGRESS.md
+当前 active spec / plan / checklist
 ```
 
 - 若项目缺少根级 `AGENTS.md`，先补最小版本再继续。
-- 若缺少 `PROGRESS.md`、`PROJECT_LOGS.md`、`MEMORY.md`、`NEXT_STEP.md`，先补最小骨架再继续。
-- 在路由、当前执行指针与 active spec / plan 不清晰前，不允许直接编码。
+- 若缺少 `PROGRESS.md`、`MEMORY.md`、`NEXT_STEP.md`，先补最小骨架再继续。
+- `PROGRESS.md` 不是强制每次阅读文件；它是 agent 执行小结的累计记录，按需查看。
+- 如果用户不确定当前或之前做到哪一步，优先通过 `NEXT_STEP.md`、spec/plan 时间顺序、checklist 完成情况，以及必要的代码审查来恢复状态，而不是依赖流水日志。
 
 ### 1.2 Superpowers Skill Set 为默认执行入口
 - 每次代码工程对话默认先进入 `using-superpowers`。
 - 只要存在匹配 skill，就必须走该 skill，不允许用临时流程替代。
-- `Superpowers` 负责流程执行，`Harness` 负责仓库治理标准、文档真相、lint/test invariant 与 architecture drift 治理。
+- `Superpowers` 负责流程执行，`Harness` 负责轻量初始化、仓库文档真相、lint/test invariant 与 architecture drift 治理。
 - 常用路由如下：
   - 项目初始化或仓库 bootstrap：`harness:init`
   - 新功能、行为变化、工作流变化：`brainstorming`
@@ -54,16 +57,13 @@ PROJECT_LOGS.md（仅在项目级 inspect / 复盘 / 方向追溯 / 历史决策
 - 禁止用宽泛 `try/catch`、静默默认值、自动降级来掩盖真实问题。
 - 允许失败早暴露，优先通过报错、日志、review 和 debugging 闭环迭代，而不是提前堆复杂异常处理。
 
-### 1.4 文档与实现强制同构
-- `AGENTS.md`：静态政策、目录入口、边界说明
-- `AGENT_INDEX.md`：任务路由与 agent / skill 选择
-- `PROGRESS.md`：项目状态面板，只记录当前基线、活跃主线、项目级风险、最近完成闭环与参考入口
-- `PROJECT_LOGS.md`：append-only 项目流水账，记录决策、尝试、推翻、转向与验证轨迹
-- `MEMORY.md`：可复用经验、易踩坑、稳定边界
-- `NEXT_STEP.md`：唯一下一步执行指针
-- `.harness/bootstrap.toml`：仓库 bootstrap 与治理模型的机器可读 source of truth（若存在）
-- `.plan/`：当前闭环的执行计划与 checklist
-- 项目声明的 spec 路径：设计文档，默认 `docs/superpowers/specs/`
+### 1.4 文档职责保持清晰
+- `AGENTS.md`：静态政策、协作边界、入口规则
+- `PROGRESS.md`：agent 任务执行小结的累计记录，不是每回合必读入口
+- `MEMORY.md`：可复用经验、稳定边界、易踩坑
+- `NEXT_STEP.md`：唯一下一步指针，只引用 active spec / plan / checklist
+- `docs/superpowers/specs/`：冻结后的设计真相
+- `docs/superpowers/plans/`：当前闭环的执行计划与 checklist
 - `artifacts/`：日志、截图、验收证据
 
 一旦文档与实现脱节，先对齐文档，再继续推进。
@@ -77,10 +77,10 @@ PROJECT_LOGS.md（仅在项目级 inspect / 复盘 / 方向追溯 / 历史决策
 
 ## 2. Standard Superpowers Workflow
 1. Route
-- 默认读取 `PROGRESS.md -> NEXT_STEP.md -> MEMORY.md -> AGENT_INDEX.md -> .harness/bootstrap.toml（若存在）`
-- 需要追溯历史决策、尝试和转向时再读取 `PROJECT_LOGS.md`
+- 默认读取 `NEXT_STEP.md -> MEMORY.md`
+- 若当前状态不清晰，再看 `PROGRESS.md` 与 active spec / plan / checklist
 - 加载 `using-superpowers`
-- 由项目 `AGENT_INDEX.md` 决定当前任务应走的 agent / skill
+- 由当前任务类型和 active 文档状态决定 skill 路由
 
 2. Freeze Scope
 - 新功能、行为变化、流程变化先走 `brainstorming`
@@ -103,37 +103,33 @@ PROJECT_LOGS.md（仅在项目级 inspect / 复盘 / 方向追溯 / 历史决策
 
 6. Finish And Sync Back
 - 使用 `finishing-a-development-branch` 完成分支/工作区收尾
-- 回写 `PROGRESS.md`（仅在项目状态面板发生变化时）、`MEMORY.md`、`NEXT_STEP.md`、plan checklist 与证据路径
-- 追加 `PROJECT_LOGS.md`，记录本次任务中的决策、尝试、推翻、方向调整与验证结果
-- `NEXT_STEP.md` 永远只保留一条直接可执行指针
+- 回写 `PROGRESS.md`、`MEMORY.md`、`NEXT_STEP.md`、plan checklist 与证据路径
+- `NEXT_STEP.md` 永远只保留一个直接指针；如果当前任务已完成且没有新任务，就清空它
+- goal 结束后默认补一次文件状态审查，确保 `PROGRESS.md`、`MEMORY.md`、`NEXT_STEP.md` 与 active spec / plan / checklist 一致
 
 ## 3. Context Loading Protocol
-- L0：`PROGRESS.md -> NEXT_STEP.md -> MEMORY.md -> AGENT_INDEX.md -> .harness/bootstrap.toml（若存在）`
+- L0：`NEXT_STEP.md -> MEMORY.md`
 - L1：当前 Active spec + 当前 Active plan / checklist
-- L2：`PROJECT_LOGS.md` + 历史 specs / plans，仅用于项目级 inspect、复盘、方向追溯、回归、审计、验收口径争议
+- L2：`PROGRESS.md` + 必要的代码审查，仅在当前状态、完成度或任务边界不清晰时使用
 
 触发 L1 / L2 的常见条件：
 - 跨模块改造
 - 公共契约变化
 - 验收标准漂移
 - 回归问题追根溯源
-- 需要理解为何某条技术路线被推翻
-- 需要回看过去多轮方向调整
+- 用户不确定之前做到哪
+- 需要判断某条 plan 是否已经完成或过期
 
 ## 4. Project Context Governance
 - 每个代码仓库都应有一个根级 `AGENTS.md`
-- 模块级 `AGENTS.md` 仅当目录至少满足以下两项时才建议添加：
-  - 独立职责边界
-  - 独立运行入口
-  - 高频变更
-  - 容易遗漏的本地坑点
-  - 高跨模块协调成本
+- `harness:init` 只生成最小协作文档骨架和 `docs/superpowers/templates/`
+- 不再把隐藏 manifest、额外索引文件或流水日志视为 user-level 初始化前提
 - 优先少而精的高信号文档，而不是全目录铺文档
 
 ## 5. Quality Gate
 交付前必须：
 - 运行项目声明的验证命令
-- 若仓库已声明 Harness 治理模型，先确认文档真相、lint/test invariant 文档与当前交付边界一致
+- 确认 active spec / plan / checklist 与当前交付边界一致
 - 如果项目尚未声明门禁，至少执行最强可用的 `test`、`typecheck`、`build` 等价验证
 - 若任一门禁失败，不得宣称完成，必须明确失败点和修复计划
 
@@ -143,7 +139,8 @@ PROJECT_LOGS.md（仅在项目级 inspect / 复盘 / 方向追溯 / 历史决策
 - 应走的 superpowers skill path 已实际执行
 - 有新鲜的验证证据
 - 审查意见已修复，或明确记录延期理由
-- `PROGRESS.md`、`PROJECT_LOGS.md`、`MEMORY.md`、`NEXT_STEP.md` 与 checklist 已同步
+- `PROGRESS.md`、`MEMORY.md`、`NEXT_STEP.md` 与 checklist 已同步
+- goal 收尾文件状态审查没有留下未解释的漂移
 
 ## 7. Handoff Format
 每次交付至少要说明：
@@ -155,12 +152,10 @@ PROJECT_LOGS.md（仅在项目级 inspect / 复盘 / 方向追溯 / 历史决策
 ## Quick Check
 每次编码前：
 ```text
-- 读取 PROGRESS.md
 - 读取 NEXT_STEP.md
 - 读取 MEMORY.md
-- 读取 AGENT_INDEX.md（项目根优先，共享兜底其次）
-- 若存在则读取 .harness/bootstrap.toml
-- 如需历史决策追溯再读取 PROJECT_LOGS.md
+- 如状态不清晰，再读取 PROGRESS.md
+- 查看当前 active spec / plan / checklist
 - 加载 using-superpowers
 - 按路由进入对应 process skill
 ```
@@ -169,7 +164,7 @@ PROJECT_LOGS.md（仅在项目级 inspect / 复盘 / 方向追溯 / 历史决策
 ```text
 - 运行 review 与 verification
 - 对齐文档与证据
-- 在 PROJECT_LOGS.md 追加本次任务流水
-- 如项目状态面板已变化则更新 PROGRESS.md
-- 更新 NEXT_STEP.md 为唯一下一步指针
+- 更新 PROGRESS.md 为最新任务小结
+- 更新 NEXT_STEP.md 为唯一下一步指针；若无下一步则清空
+- 检查 MEMORY.md 没有混入过程流水
 ```

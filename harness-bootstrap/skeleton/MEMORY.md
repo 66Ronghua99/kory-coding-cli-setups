@@ -3,7 +3,7 @@
 ## Stable Notes
 
 - This repository was initialized from the local Harness bootstrap pack.
-- `.harness/bootstrap.toml` is the machine-readable bootstrap source of truth.
+- Required bootstrap files are `AGENTS.md`, `PROGRESS.md`, `MEMORY.md`, `NEXT_STEP.md`, plus `docs/superpowers/templates/`.
 - Template files under `docs/superpowers/templates/` define the required document shape.
 - Harness skills define governance standards; Superpowers drives workflow execution.
 - `harness:doc-health` owns repository truth and pointer consistency.

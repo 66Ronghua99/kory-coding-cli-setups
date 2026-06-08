@@ -13,7 +13,7 @@ OpenAI's Harness pattern is to keep `AGENTS.md` short, treat repo-local docs as 
 
 Use this skill when:
 
-- `PROGRESS.md`, `NEXT_STEP.md`, `MEMORY.md`, `AGENT_INDEX.md`, or `.harness/bootstrap.toml` might disagree
+- `PROGRESS.md`, `NEXT_STEP.md`, `MEMORY.md`, or the active spec/plan/checklist chain might disagree
 - an active spec, plan, or evidence artifact may no longer match current repository truth
 - a repo needs recurring doc-gardening instead of ad hoc cleanup
 - one specific spec or plan needs a bounded coherence review before work continues

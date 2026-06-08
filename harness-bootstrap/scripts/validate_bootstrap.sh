@@ -5,11 +5,9 @@ TARGET_DIR="${1:-$(pwd)}"
 
 required_paths=(
   "AGENTS.md"
-  "AGENT_INDEX.md"
   "PROGRESS.md"
   "MEMORY.md"
   "NEXT_STEP.md"
-  ".harness/bootstrap.toml"
   "docs/project/README.md"
   "docs/architecture/overview.md"
   "docs/architecture/layers.md"
@@ -29,32 +27,9 @@ for rel_path in "${required_paths[@]}"; do
   fi
 done
 
-required_manifest_keys=(
-  'bootstrap_version = '
-  'mode = '
-  'preset = '
-  'entry_skill = '
-  'governance_model = '
-  'templates_dir = '
-  'doc_health_skill = '
-  'lint_test_skill = '
-)
-
-manifest_path="$TARGET_DIR/.harness/bootstrap.toml"
-if [[ -f "$manifest_path" ]]; then
-  for key in "${required_manifest_keys[@]}"; do
-    if ! grep -F "$key" "$manifest_path" >/dev/null 2>&1; then
-      echo "manifest-key-missing: $key" >&2
-      missing=1
-    fi
-  done
-fi
-
 no_absolute_path_files=(
   "AGENTS.md"
-  "AGENT_INDEX.md"
   "NEXT_STEP.md"
-  ".harness/bootstrap.toml"
 )
 
 for rel_path in "${no_absolute_path_files[@]}"; do

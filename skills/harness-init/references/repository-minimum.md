@@ -3,11 +3,9 @@
 A bootstrapped repository is considered minimally initialized when it contains:
 
 - `AGENTS.md`
-- `AGENT_INDEX.md`
 - `PROGRESS.md`
 - `MEMORY.md`
 - `NEXT_STEP.md`
-- `.harness/bootstrap.toml`
 - `docs/project/README.md`
 - `docs/architecture/overview.md`
 - `docs/architecture/layers.md`

@@ -25,19 +25,6 @@ while IFS= read -r -d '' path; do
   fi
 done < <(find "$SKELETON_DIR" \( -type d -o -type f \) -print0)
 
-if [[ -f "$TARGET_DIR/.harness/bootstrap.toml.example" && ! -f "$TARGET_DIR/.harness/bootstrap.toml" ]]; then
-  cp "$TARGET_DIR/.harness/bootstrap.toml.example" "$TARGET_DIR/.harness/bootstrap.toml"
-fi
-
-if [[ -f "$TARGET_DIR/.harness/bootstrap.toml" ]]; then
-  tmp_file="$(mktemp)"
-  sed \
-    -e 's/^mode = .*/mode = "migration"/' \
-    -e 's/^preset = .*/preset = "none"/' \
-    "$TARGET_DIR/.harness/bootstrap.toml" > "$tmp_file"
-  mv "$tmp_file" "$TARGET_DIR/.harness/bootstrap.toml"
-fi
-
 state_file="$TARGET_DIR/docs/project/current-state.md"
 if [[ ! -f "$state_file" ]]; then
   {

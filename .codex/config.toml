@@ -53,3 +53,9 @@ command = "npx"
 
 [sandbox_workspace_write]
 network_access = true
+
+[plugins."gmail@openai-curated"]
+enabled = true
+
+[plugins."github@openai-curated"]
+enabled = true

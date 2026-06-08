@@ -1,7 +1,5 @@
 # Next Step
 
-Write or update the current approved spec using:
+Point to the active spec, plan, or checklist here.
 
-`docs/superpowers/templates/SPEC_TEMPLATE.md`
-
-Then route into `writing-plans` once the spec is approved.
+- If no task is active, leave this file intentionally blank except for a short "No active next step." note.

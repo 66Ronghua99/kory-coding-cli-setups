@@ -1,3 +1,4 @@
 # Harness local verification artifacts
 superpowers/artifacts/refactor-gate/
 skills/superpowers
+node_modules
