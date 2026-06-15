@@ -5,6 +5,10 @@ SOURCE_DIR="$(cd "$(dirname "$0")" && pwd)"
 SUPERPOWERS_DIR="${SUPERPOWERS_DIR:-$SOURCE_DIR/superpowers}"
 SUPERPOWERS_REMOTE_URL="${SUPERPOWERS_REMOTE_URL:-https://github.com/obra/superpowers.git}"
 SUPERPOWERS_BRANCH="${SUPERPOWERS_BRANCH:-main}"
+HUMANIZE_SYNC="${HUMANIZE_SYNC:-1}"
+HUMANIZE_DIR="${HUMANIZE_DIR:-$SOURCE_DIR/humanize}"
+HUMANIZE_REMOTE_URL="${HUMANIZE_REMOTE_URL:-https://github.com/PolyArch/humanize.git}"
+HUMANIZE_BRANCH="${HUMANIZE_BRANCH:-main}"
 BACKUP_ROOT="${HOME}/.coding-cli-sync-backups/$(date +%Y%m%d_%H%M%S)"
 DRY_RUN=0
 CURATED_SUPERPOWERS_SKILLS=(
@@ -115,6 +119,30 @@ ensure_superpowers_repo() {
   [[ -d "$SUPERPOWERS_DIR/skills" ]] || die "Missing superpowers skills directory: $SUPERPOWERS_DIR/skills."
 }
 
+ensure_humanize_repo() {
+  [[ "$HUMANIZE_SYNC" != "0" ]] || return 0
+  command -v git >/dev/null 2>&1 || die "git is required to sync humanize"
+  [[ -n "$HUMANIZE_REMOTE_URL" ]] || die "Missing Humanize remote. Set HUMANIZE_REMOTE_URL or HUMANIZE_SYNC=0."
+
+  if [[ ! -e "$HUMANIZE_DIR" ]]; then
+    ensure_dir "$(dirname "$HUMANIZE_DIR")"
+    run_cmd git clone --branch "$HUMANIZE_BRANCH" --single-branch "$HUMANIZE_REMOTE_URL" "$HUMANIZE_DIR"
+    [[ "$DRY_RUN" -eq 1 ]] && return 0
+  elif [[ ! -e "$HUMANIZE_DIR/.git" ]]; then
+    die "Existing humanize path is not a git repository: $HUMANIZE_DIR"
+  else
+    run_cmd git -C "$HUMANIZE_DIR" checkout "$HUMANIZE_BRANCH"
+    run_cmd git -C "$HUMANIZE_DIR" pull --ff-only origin "$HUMANIZE_BRANCH"
+  fi
+
+  [[ -x "$HUMANIZE_DIR/scripts/install-skill.sh" ]] || die "Missing executable Humanize installer: $HUMANIZE_DIR/scripts/install-skill.sh."
+}
+
+install_humanize_codex_rlcr() {
+  [[ "$HUMANIZE_SYNC" != "0" ]] || return 0
+  run_cmd "$HUMANIZE_DIR/scripts/install-skill.sh" --target codex
+}
+
 cleanup_legacy_superpowers_namespace() {
   local legacy_path="$SOURCE_DIR/skills/superpowers"
   if [[ -e "$legacy_path" || -L "$legacy_path" ]]; then
@@ -154,9 +182,16 @@ main() {
   log "Superpowers directory: $SUPERPOWERS_DIR"
   log "Superpowers remote: $SUPERPOWERS_REMOTE_URL"
   log "Superpowers branch: $SUPERPOWERS_BRANCH"
+  log "Humanize sync: $HUMANIZE_SYNC"
+  if [[ "$HUMANIZE_SYNC" != "0" ]]; then
+    log "Humanize directory: $HUMANIZE_DIR"
+    log "Humanize remote: $HUMANIZE_REMOTE_URL"
+    log "Humanize branch: $HUMANIZE_BRANCH"
+  fi
   log "Backup directory: $BACKUP_ROOT"
 
   ensure_superpowers_repo
+  ensure_humanize_repo
   ensure_curated_superpowers_skills
 
   # Claude Code
@@ -179,6 +214,7 @@ main() {
   ensure_symlink "$SOURCE_DIR/.codex/config.toml" "${HOME}/.codex/config.toml"
   ensure_symlink "$SOURCE_DIR/.codex/agents" "${HOME}/.codex/agents"
   ensure_codex_skills_links
+  install_humanize_codex_rlcr
 
   log "Sync complete."
 }

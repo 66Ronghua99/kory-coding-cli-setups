@@ -79,6 +79,33 @@ EOF
   )
 }
 
+make_humanize_remote() {
+  local remote_root="$1"
+  local version="$2"
+  local bare_repo="$remote_root/humanize-remote.git"
+  local work_repo="$remote_root/humanize-work"
+
+  git init --bare "$bare_repo" >/dev/null
+  git clone "$bare_repo" "$work_repo" >/dev/null 2>&1
+  (
+    cd "$work_repo"
+    git config user.name "Test"
+    git config user.email "test@example.com"
+    mkdir -p scripts
+    cat > scripts/install-skill.sh <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+printf 'install-skill %s HOME=%s\n' "$*" "${HOME:-}" >> "${HUMANIZE_INSTALL_LOG:?}"
+EOF
+    chmod +x scripts/install-skill.sh
+    printf 'humanize %s\n' "$version" > VERSION
+    git add VERSION scripts/install-skill.sh
+    git commit -m "init humanize $version" >/dev/null
+    git branch -M main >/dev/null
+    git push origin main >/dev/null
+  )
+}
+
 update_superpowers_remote() {
   local remote_root="$1"
   local version="$2"
@@ -104,6 +131,25 @@ EOF
     printf 'fixture %s\n' "$version" > README.md
     git add README.md skills
     git commit -m "update $version" >/dev/null
+    git push origin main >/dev/null
+  )
+}
+
+update_humanize_remote() {
+  local remote_root="$1"
+  local version="$2"
+  local work_repo="$remote_root/humanize-update-work"
+  local bare_repo="$remote_root/humanize-remote.git"
+
+  git clone "$bare_repo" "$work_repo" >/dev/null 2>&1
+  (
+    cd "$work_repo"
+    git checkout main >/dev/null 2>&1
+    git config user.name "Test"
+    git config user.email "test@example.com"
+    printf 'humanize %s\n' "$version" > VERSION
+    git add VERSION
+    git commit -m "update humanize $version" >/dev/null
     git push origin main >/dev/null
   )
 }
@@ -146,11 +192,17 @@ run_sync() {
   local home_dir="$2"
   local remote_url="$3"
   local branch="$4"
+  local remote_root
+  remote_root="$(dirname "$remote_url")"
   shift 2
 
   HOME="$home_dir" \
     SUPERPOWERS_REMOTE_URL="$remote_url" \
     SUPERPOWERS_BRANCH="$branch" \
+    HUMANIZE_REMOTE_URL="${HUMANIZE_TEST_REMOTE_URL:-$remote_root/humanize-remote.git}" \
+    HUMANIZE_BRANCH="${HUMANIZE_TEST_BRANCH:-main}" \
+    HUMANIZE_SYNC="${HUMANIZE_TEST_SYNC:-1}" \
+    HUMANIZE_INSTALL_LOG="${HUMANIZE_TEST_INSTALL_LOG:-$home_dir/humanize-install.log}" \
     bash "$source/sync-agent-links.sh" "${@:3}"
 }
 
@@ -171,6 +223,7 @@ test_sync_clones_and_exports_curated_skills() {
   local remote_url="$remote_root/superpowers-remote.git"
   make_fake_source "$source"
   make_superpowers_remote "$remote_root" "v1"
+  make_humanize_remote "$remote_root" "v1"
   mkdir -p "$home_dir"
 
   run_sync "$source" "$home_dir" "$remote_url" "main"
@@ -197,6 +250,7 @@ test_sync_pulls_latest_superpowers_content() {
   local remote_url="$remote_root/superpowers-remote.git"
   make_fake_source "$source"
   make_superpowers_remote "$remote_root" "v1"
+  make_humanize_remote "$remote_root" "v1"
   mkdir -p "$home_dir"
 
   run_sync "$source" "$home_dir" "$remote_url" "main"
@@ -216,6 +270,7 @@ test_conflicting_targets_are_backed_up() {
   local remote_url="$remote_root/superpowers-remote.git"
   make_fake_source "$source"
   make_superpowers_remote "$remote_root" "v1"
+  make_humanize_remote "$remote_root" "v1"
   mkdir -p "$home_dir/.claude"
   printf 'old-claude\n' > "$home_dir/.claude/CLAUDE.md"
 
@@ -237,6 +292,7 @@ test_rerun_is_idempotent_when_links_are_correct() {
   local remote_url="$remote_root/superpowers-remote.git"
   make_fake_source "$source"
   make_superpowers_remote "$remote_root" "v1"
+  make_humanize_remote "$remote_root" "v1"
   mkdir -p "$home_dir"
 
   run_sync "$source" "$home_dir" "$remote_url" "main"
@@ -254,6 +310,7 @@ test_existing_non_git_superpowers_path_fails() {
   local remote_url="$remote_root/superpowers-remote.git"
   make_fake_source "$source"
   make_superpowers_remote "$remote_root" "v1"
+  make_humanize_remote "$remote_root" "v1"
   mkdir -p "$home_dir" "$source/superpowers"
   printf 'not-a-git-repo\n' > "$source/superpowers/README.txt"
 
@@ -272,6 +329,7 @@ test_legacy_namespace_is_replaced() {
   local remote_url="$remote_root/superpowers-remote.git"
   make_fake_source "$source"
   make_superpowers_remote "$remote_root" "v1"
+  make_humanize_remote "$remote_root" "v1"
   mkdir -p "$home_dir" "$source/skills"
   ln -s "$source/superpowers/skills" "$source/skills/superpowers"
 
@@ -288,6 +346,7 @@ test_invalid_remote_fails_cleanly() {
   local home_dir="$tempdir/home"
   local invalid_remote="$tempdir/does-not-exist.git"
   make_fake_source "$source"
+  make_humanize_remote "$tempdir/remote" "v1"
   mkdir -p "$home_dir"
 
   if run_sync "$source" "$home_dir" "$invalid_remote" "main" >/tmp/test-sync-agent-links.out 2>/tmp/test-sync-agent-links.err; then
@@ -299,6 +358,92 @@ test_powershell_script_exists() {
   assert_exists "$REPO_ROOT/sync-agent-links.ps1"
 }
 
+test_humanize_checkout_is_gitignored() {
+  assert_file_contains "$REPO_ROOT/.gitignore" "humanize"
+}
+
+test_sync_installs_humanize_rlcr_for_codex() {
+  local tempdir
+  tempdir="$(mktemp -d)"
+  local source="$tempdir/source"
+  local home_dir="$tempdir/home"
+  local remote_root="$tempdir/remote"
+  local remote_url="$remote_root/superpowers-remote.git"
+  local install_log="$tempdir/humanize-install.log"
+  make_fake_source "$source"
+  make_superpowers_remote "$remote_root" "v1"
+  make_humanize_remote "$remote_root" "v1"
+  mkdir -p "$home_dir"
+
+  HUMANIZE_TEST_INSTALL_LOG="$install_log" run_sync "$source" "$home_dir" "$remote_url" "main"
+
+  assert_exists "$source/humanize/.git"
+  assert_file_contains "$source/humanize/VERSION" "humanize v1"
+  assert_file_contains "$install_log" "install-skill --target codex"
+  assert_file_contains "$install_log" "HOME=$home_dir"
+}
+
+test_sync_updates_humanize_checkout_on_rerun() {
+  local tempdir
+  tempdir="$(mktemp -d)"
+  local source="$tempdir/source"
+  local home_dir="$tempdir/home"
+  local remote_root="$tempdir/remote"
+  local remote_url="$remote_root/superpowers-remote.git"
+  local install_log="$tempdir/humanize-install.log"
+  make_fake_source "$source"
+  make_superpowers_remote "$remote_root" "v1"
+  make_humanize_remote "$remote_root" "v1"
+  mkdir -p "$home_dir"
+
+  HUMANIZE_TEST_INSTALL_LOG="$install_log" run_sync "$source" "$home_dir" "$remote_url" "main"
+  update_humanize_remote "$remote_root" "v2"
+  HUMANIZE_TEST_INSTALL_LOG="$install_log" run_sync "$source" "$home_dir" "$remote_url" "main"
+
+  assert_file_contains "$source/humanize/VERSION" "humanize v2"
+  [[ "$(grep -c 'install-skill --target codex' "$install_log")" == "2" ]] || fail "Expected Humanize installer to run on each sync"
+}
+
+test_humanize_sync_can_be_disabled() {
+  local tempdir
+  tempdir="$(mktemp -d)"
+  local source="$tempdir/source"
+  local home_dir="$tempdir/home"
+  local remote_root="$tempdir/remote"
+  local remote_url="$remote_root/superpowers-remote.git"
+  local install_log="$tempdir/humanize-install.log"
+  make_fake_source "$source"
+  make_superpowers_remote "$remote_root" "v1"
+  make_humanize_remote "$remote_root" "v1"
+  mkdir -p "$home_dir"
+
+  HUMANIZE_TEST_SYNC=0 HUMANIZE_TEST_INSTALL_LOG="$install_log" run_sync "$source" "$home_dir" "$remote_url" "main"
+
+  assert_not_exists "$source/humanize"
+  assert_not_exists "$install_log"
+}
+
+test_dry_run_allows_missing_humanize_checkout() {
+  local tempdir
+  tempdir="$(mktemp -d)"
+  local source="$tempdir/source"
+  local home_dir="$tempdir/home"
+  local remote_root="$tempdir/remote"
+  local remote_url="$remote_root/superpowers-remote.git"
+  make_fake_source "$source"
+  make_superpowers_remote "$remote_root" "v1"
+  make_humanize_remote "$remote_root" "v1"
+  mkdir -p "$home_dir"
+
+  HUMANIZE_TEST_SYNC=0 run_sync "$source" "$home_dir" "$remote_url" "main"
+
+  HUMANIZE_TEST_SYNC=1 run_sync "$source" "$home_dir" "$remote_url" "main" --dry-run >/tmp/test-sync-agent-links-dry-run.out
+
+  assert_not_exists "$source/humanize"
+  assert_file_contains /tmp/test-sync-agent-links-dry-run.out "[dry-run] git clone --branch main --single-branch $remote_root/humanize-remote.git $source/humanize"
+  assert_file_contains /tmp/test-sync-agent-links-dry-run.out "[dry-run] $source/humanize/scripts/install-skill.sh --target codex"
+}
+
 run_selected_tests() {
   local tests=(
     test_sync_clones_and_exports_curated_skills
@@ -308,7 +453,12 @@ run_selected_tests() {
     test_existing_non_git_superpowers_path_fails
     test_legacy_namespace_is_replaced
     test_invalid_remote_fails_cleanly
+    test_sync_installs_humanize_rlcr_for_codex
+    test_sync_updates_humanize_checkout_on_rerun
+    test_humanize_sync_can_be_disabled
+    test_dry_run_allows_missing_humanize_checkout
     test_powershell_script_exists
+    test_humanize_checkout_is_gitignored
   )
 
   local test_name

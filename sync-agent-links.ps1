@@ -10,6 +10,10 @@ $TargetHome = if ($env:SYNC_HOME) { $env:SYNC_HOME } elseif ($env:USERPROFILE) {
 $SuperpowersDir = if ($env:SUPERPOWERS_DIR) { $env:SUPERPOWERS_DIR } else { Join-Path $SourceDir "superpowers" }
 $SuperpowersRemoteUrl = if ($env:SUPERPOWERS_REMOTE_URL) { $env:SUPERPOWERS_REMOTE_URL } else { "https://github.com/obra/superpowers.git" }
 $SuperpowersBranch = if ($env:SUPERPOWERS_BRANCH) { $env:SUPERPOWERS_BRANCH } else { "main" }
+$HumanizeSync = if ($env:HUMANIZE_SYNC) { $env:HUMANIZE_SYNC } else { "1" }
+$HumanizeDir = if ($env:HUMANIZE_DIR) { $env:HUMANIZE_DIR } else { Join-Path $SourceDir "humanize" }
+$HumanizeRemoteUrl = if ($env:HUMANIZE_REMOTE_URL) { $env:HUMANIZE_REMOTE_URL } else { "https://github.com/PolyArch/humanize.git" }
+$HumanizeBranch = if ($env:HUMANIZE_BRANCH) { $env:HUMANIZE_BRANCH } else { "main" }
 $BackupRoot = Join-Path $TargetHome (".coding-cli-sync-backups\" + (Get-Date -Format "yyyyMMdd_HHmmss"))
 $CuratedSuperpowersSkills = @(
     "using-superpowers",
@@ -260,6 +264,91 @@ function Ensure-SuperpowersRepo {
     }
 }
 
+function Invoke-NativeChecked {
+    param(
+        [string]$Label,
+        [scriptblock]$Action
+    )
+
+    Invoke-Step $Label {
+        & $Action
+        if ($LASTEXITCODE -ne 0) {
+            throw "$Label failed with exit code $LASTEXITCODE"
+        }
+    }
+}
+
+function Ensure-HumanizeRepo {
+    if ($HumanizeSync -eq "0") {
+        return
+    }
+
+    if ([string]::IsNullOrWhiteSpace($HumanizeRemoteUrl)) {
+        throw "Missing Humanize remote. Set HUMANIZE_REMOTE_URL or HUMANIZE_SYNC=0."
+    }
+
+    if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+        throw "git is required to sync humanize"
+    }
+
+    if (-not (Test-Path -LiteralPath $HumanizeDir)) {
+        Ensure-Dir (Split-Path -Parent $HumanizeDir)
+        Invoke-NativeChecked "git clone $HumanizeRemoteUrl -> $HumanizeDir" {
+            git clone --branch $HumanizeBranch --single-branch $HumanizeRemoteUrl $HumanizeDir | Out-Null
+        }
+        if ($DryRun) {
+            return
+        }
+    } elseif (-not (Test-Path -LiteralPath (Join-Path $HumanizeDir ".git"))) {
+        throw "Existing humanize path is not a git repository: $HumanizeDir"
+    } else {
+        Invoke-NativeChecked "git checkout $HumanizeBranch in $HumanizeDir" {
+            git -C $HumanizeDir checkout $HumanizeBranch | Out-Null
+        }
+        Invoke-NativeChecked "git pull --ff-only origin $HumanizeBranch in $HumanizeDir" {
+            git -C $HumanizeDir pull --ff-only origin $HumanizeBranch | Out-Null
+        }
+    }
+
+    $installer = Join-Path (Join-Path $HumanizeDir "scripts") "install-skill.sh"
+    if (-not (Test-Path -LiteralPath $installer -PathType Leaf)) {
+        throw "Missing Humanize installer: $installer"
+    }
+}
+
+function Install-HumanizeCodexRlcr {
+    if ($HumanizeSync -eq "0") {
+        return
+    }
+
+    if (-not (Get-Command bash -ErrorAction SilentlyContinue)) {
+        throw "bash is required to run Humanize's Codex installer. Install bash or set HUMANIZE_SYNC=0."
+    }
+
+    $installer = Join-Path (Join-Path $HumanizeDir "scripts") "install-skill.sh"
+    $oldHome = $env:HOME
+    $oldCodexHome = $env:CODEX_HOME
+    try {
+        $env:HOME = $TargetHome
+        $env:CODEX_HOME = Join-Path $TargetHome ".codex"
+        Invoke-NativeChecked "Humanize Codex RLCR install" {
+            bash $installer --target codex
+        }
+    } finally {
+        if ($null -eq $oldHome) {
+            Remove-Item Env:\HOME -ErrorAction SilentlyContinue
+        } else {
+            $env:HOME = $oldHome
+        }
+
+        if ($null -eq $oldCodexHome) {
+            Remove-Item Env:\CODEX_HOME -ErrorAction SilentlyContinue
+        } else {
+            $env:CODEX_HOME = $oldCodexHome
+        }
+    }
+}
+
 function Cleanup-LegacySuperpowersNamespace {
     $legacyPath = Join-Path (Join-Path $SourceDir "skills") "superpowers"
     if (Test-Path -LiteralPath $legacyPath) {
@@ -295,9 +384,16 @@ Log "Source directory: $SourceDir"
 Log "Superpowers directory: $SuperpowersDir"
 Log "Superpowers remote: $SuperpowersRemoteUrl"
 Log "Superpowers branch: $SuperpowersBranch"
+Log "Humanize sync: $HumanizeSync"
+if ($HumanizeSync -ne "0") {
+    Log "Humanize directory: $HumanizeDir"
+    Log "Humanize remote: $HumanizeRemoteUrl"
+    Log "Humanize branch: $HumanizeBranch"
+}
 Log "Backup directory: $BackupRoot"
 
 Ensure-SuperpowersRepo
+Ensure-HumanizeRepo
 Ensure-CuratedSuperpowersSkills
 
 Ensure-FileSymlink -Source (Join-Path $SourceDir "CLAUDE.md") -Target (Join-Path $TargetHome ".claude\CLAUDE.md")
@@ -315,5 +411,6 @@ Ensure-FileSymlink -Source (Join-Path $SourceDir "AGENTS.md") -Target (Join-Path
 Ensure-FileSymlink -Source (Join-Path $SourceDir ".codex\config.toml") -Target (Join-Path $TargetHome ".codex\config.toml")
 Ensure-DirectoryLink -Source (Join-Path $SourceDir ".codex\agents") -Target (Join-Path $TargetHome ".codex\agents")
 Ensure-CodexSkillLinks
+Install-HumanizeCodexRlcr
 
 Log "Sync complete."

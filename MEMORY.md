@@ -14,8 +14,12 @@
 - The shared `skills` directory remains the downstream sync unit for agent homes; `superpowers` is exposed through a curated generated set of top-level links under [`skills/`](/Users/cory/.coding-cli/skills), not through a nested `skills/superpowers` namespace.
 - `superpowers` sync is owned by [`sync-agent-links.sh`](/Users/cory/.coding-cli/sync-agent-links.sh) and [`sync-agent-links.ps1`](/Users/cory/.coding-cli/sync-agent-links.ps1): they clone or fast-forward the checkout and regenerate the curated top-level links as local, ignored artifacts.
 - `sync-agent-links.sh` is the macOS/Linux source of truth for the target mapping, and [`sync-agent-links.ps1`](/Users/cory/.coding-cli/sync-agent-links.ps1) mirrors that behavior for Windows hidden directories under `%USERPROFILE%`.
+- Humanize RLCR sync is owned by [`sync-agent-links.sh`](/Users/cory/.coding-cli/sync-agent-links.sh) and mirrored in [`sync-agent-links.ps1`](/Users/cory/.coding-cli/sync-agent-links.ps1): by default they manage a root-level ignored `humanize/` checkout from `https://github.com/PolyArch/humanize.git`, fast-forward it, and invoke `humanize/scripts/install-skill.sh --target codex` to install/update the Codex RLCR execution gate.
+- Humanize remains an execution gate only in this user-level workflow. Superpowers specs and plans remain the planning source of truth; Humanize `gen-plan` and `refine-plan` are not the primary planning path.
+- Humanize sync can be disabled with `HUMANIZE_SYNC=0`, and `HUMANIZE_DIR`, `HUMANIZE_REMOTE_URL`, and `HUMANIZE_BRANCH` override the managed checkout location/source.
 - On Windows, `sync-agent-links.ps1` falls back to hard links for file targets like `CLAUDE.md`, `AGENTS.md`, and `config.toml` when symbolic-link privilege is unavailable; directory targets still fall back to junctions.
 - Windows backup paths must be normalized under `.coding-cli-sync-backups/<timestamp>/<drive>/...`; appending raw absolute paths creates invalid or misleading backup destinations.
+- `grill-with-docs` is adapted for this workflow as a Superpowers spec-hardening skill. Its default output is inline spec improvement plus necessary `NEXT_STEP.md`/plan synchronization, not automatic `CONTEXT.md` or ADR creation.
 
 ## Working Heuristics
 
@@ -26,3 +30,4 @@
 - When state is unclear, recover truth from `NEXT_STEP.md`, current spec/plan/checklist completion, and bounded code review before editing progress summaries.
 - Treat missing `pwsh` on macOS as a verification gap to document, not a reason to claim Windows execution was tested.
 - When PowerShell runs native tools like `git` or `cmd`, check exit codes explicitly; non-zero native exits do not automatically become terminating errors.
+- Use `CONTEXT.md`/ADR capture from `grill-with-docs` only when a project already uses those files or the user explicitly asks for glossary/ADR maintenance.

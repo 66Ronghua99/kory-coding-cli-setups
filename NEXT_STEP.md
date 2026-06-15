@@ -1,6 +1,9 @@
 # Next Step
 
-Reference the active curated superpowers sync loop:
+P0: Review and commit the current workspace changes:
 
-- Spec: `docs/superpowers/specs/2026-06-08-sync-selected-superpowers-links-spec.md`
-- Plan: `docs/superpowers/plans/2026-06-08-sync-selected-superpowers-links-implementation.md`
+- Humanize RLCR sync:
+  - Spec: `docs/superpowers/specs/2026-06-08-humanize-rlcr-sync-spec.md`
+  - Plan: `docs/superpowers/plans/2026-06-08-humanize-rlcr-sync-implementation.md`
+- Grill spec-hardening skill:
+  - Skill: `skills/grill-with-docs/SKILL.md`
