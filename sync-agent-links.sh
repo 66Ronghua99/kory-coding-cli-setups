@@ -131,11 +131,44 @@ ensure_humanize_repo() {
   elif [[ ! -e "$HUMANIZE_DIR/.git" ]]; then
     die "Existing humanize path is not a git repository: $HUMANIZE_DIR"
   else
+    if [[ -e "$HUMANIZE_DIR/scripts/install-codex-hooks.sh" ]]; then
+      run_cmd git -C "$HUMANIZE_DIR" checkout -- scripts/install-codex-hooks.sh
+    fi
     run_cmd git -C "$HUMANIZE_DIR" checkout "$HUMANIZE_BRANCH"
     run_cmd git -C "$HUMANIZE_DIR" pull --ff-only origin "$HUMANIZE_BRANCH"
   fi
 
   [[ -x "$HUMANIZE_DIR/scripts/install-skill.sh" ]] || die "Missing executable Humanize installer: $HUMANIZE_DIR/scripts/install-skill.sh."
+}
+
+patch_humanize_codex_hook_probe() {
+  [[ "$HUMANIZE_SYNC" != "0" ]] || return 0
+  local hooks_installer="$HUMANIZE_DIR/scripts/install-codex-hooks.sh"
+  [[ -f "$hooks_installer" ]] || return 0
+
+  local old_probe="codex features list 2>/dev/null | grep -qE '^codex_hooks[[:space:]]'"
+  if ! grep -Fq "$old_probe" "$hooks_installer"; then
+    return 0
+  fi
+
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    log "[dry-run] patch Humanize codex_hooks feature probe in $hooks_installer"
+    return 0
+  fi
+
+  command -v python3 >/dev/null 2>&1 || die "python3 is required to patch Humanize codex_hooks probe"
+  python3 - "$hooks_installer" <<'PY'
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+old = "codex features list 2>/dev/null | grep -qE '^codex_hooks[[:space:]]'"
+new = "codex features list 2>/dev/null | awk '$1 == \"codex_hooks\" { found = 1 } END { exit(found ? 0 : 1) }'"
+if old in text:
+    path.write_text(text.replace(old, new), encoding="utf-8")
+PY
+  log "Patched Humanize codex_hooks feature probe: $hooks_installer"
 }
 
 install_humanize_codex_rlcr() {
@@ -192,6 +225,7 @@ main() {
 
   ensure_superpowers_repo
   ensure_humanize_repo
+  patch_humanize_codex_hook_probe
   ensure_curated_superpowers_skills
 
   # Claude Code

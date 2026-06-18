@@ -25,3 +25,11 @@
 - Adapted `skills/grill-with-docs/SKILL.md` from a DDD glossary/ADR grilling workflow into a Superpowers spec-hardening workflow aligned with `NEXT_STEP.md`, `MEMORY.md`, active specs, active plans, and the lightweight project document spine.
 - Preserved `CONTEXT-FORMAT.md` and `ADR-FORMAT.md` as optional compatibility references, but changed the default flow so `CONTEXT.md` and ADRs are not created unless the project already uses them or the user explicitly asks.
 - Verified the skill structure with `python3 /Users/cory/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/cory/.coding-cli/skills/grill-with-docs`.
+
+## 2026-06-18
+
+- Re-verified Humanize RLCR sync against the current `PolyArch/humanize` README and Codex install guide; the repo-owned Codex path remains `scripts/install-skill.sh --target codex`.
+- Added a narrow sync-time repair for Humanize's current `install-codex-hooks.sh` `codex features list | grep -qE ...` probe so `pipefail` does not misreport supported `codex_hooks` builds.
+- Mirrored the repair in `sync-agent-links.ps1`; local PowerShell execution remains a verification gap because `pwsh` is not installed here.
+- Verified with `bash tests/sync-agent-links/test-sync-agent-links.sh` and a real `./sync-agent-links.sh` run.
+- Confirmed Codex install results: `humanize`, `humanize-gen-plan`, `humanize-refine-plan`, and `humanize-rlcr` exist under `~/.codex/skills`; the Humanize runtime bundle exists; `~/.codex/hooks.json` contains `loop-codex-stop-hook.sh`; `.codex/config.toml` has `codex_hooks = true`.

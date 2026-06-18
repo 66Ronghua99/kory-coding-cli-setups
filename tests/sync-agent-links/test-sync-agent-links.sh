@@ -92,14 +92,29 @@ make_humanize_remote() {
     git config user.name "Test"
     git config user.email "test@example.com"
     mkdir -p scripts
+    cat > scripts/install-codex-hooks.sh <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+require_codex_hooks_support() {
+    if ! codex features list 2>/dev/null | grep -qE '^codex_hooks[[:space:]]'; then
+        echo "unsupported"
+    fi
+}
+EOF
     cat > scripts/install-skill.sh <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+if grep -Fq "grep -qE '^codex_hooks" "$script_dir/install-codex-hooks.sh"; then
+  printf 'unpatched codex_hooks probe\n' >&2
+  exit 1
+fi
 printf 'install-skill %s HOME=%s\n' "$*" "${HOME:-}" >> "${HUMANIZE_INSTALL_LOG:?}"
 EOF
-    chmod +x scripts/install-skill.sh
+    chmod +x scripts/install-skill.sh scripts/install-codex-hooks.sh
     printf 'humanize %s\n' "$version" > VERSION
-    git add VERSION scripts/install-skill.sh
+    git add VERSION scripts/install-skill.sh scripts/install-codex-hooks.sh
     git commit -m "init humanize $version" >/dev/null
     git branch -M main >/dev/null
     git push origin main >/dev/null

@@ -302,6 +302,12 @@ function Ensure-HumanizeRepo {
     } elseif (-not (Test-Path -LiteralPath (Join-Path $HumanizeDir ".git"))) {
         throw "Existing humanize path is not a git repository: $HumanizeDir"
     } else {
+        $hooksInstaller = Join-Path (Join-Path $HumanizeDir "scripts") "install-codex-hooks.sh"
+        if (Test-Path -LiteralPath $hooksInstaller -PathType Leaf) {
+            Invoke-NativeChecked "restore managed Humanize hook installer in $HumanizeDir" {
+                git -C $HumanizeDir checkout -- scripts/install-codex-hooks.sh | Out-Null
+            }
+        }
         Invoke-NativeChecked "git checkout $HumanizeBranch in $HumanizeDir" {
             git -C $HumanizeDir checkout $HumanizeBranch | Out-Null
         }
@@ -314,6 +320,33 @@ function Ensure-HumanizeRepo {
     if (-not (Test-Path -LiteralPath $installer -PathType Leaf)) {
         throw "Missing Humanize installer: $installer"
     }
+}
+
+function Repair-HumanizeCodexHookProbe {
+    if ($HumanizeSync -eq "0") {
+        return
+    }
+
+    $hooksInstaller = Join-Path (Join-Path $HumanizeDir "scripts") "install-codex-hooks.sh"
+    if (-not (Test-Path -LiteralPath $hooksInstaller -PathType Leaf)) {
+        return
+    }
+
+    $oldProbe = "codex features list 2>/dev/null | grep -qE '^codex_hooks[[:space:]]'"
+    $content = Get-Content -LiteralPath $hooksInstaller -Raw
+    if (-not $content.Contains($oldProbe)) {
+        return
+    }
+
+    if ($DryRun) {
+        Write-Host "[dry-run] patch Humanize codex_hooks feature probe in $hooksInstaller"
+        return
+    }
+
+    $newProbe = "codex features list 2>/dev/null | awk '`$1 == `"codex_hooks`" { found = 1 } END { exit(found ? 0 : 1) }'"
+    $content = $content.Replace($oldProbe, $newProbe)
+    Set-Content -LiteralPath $hooksInstaller -Value $content -NoNewline
+    Log "Patched Humanize codex_hooks feature probe: $hooksInstaller"
 }
 
 function Install-HumanizeCodexRlcr {
@@ -394,6 +427,7 @@ Log "Backup directory: $BackupRoot"
 
 Ensure-SuperpowersRepo
 Ensure-HumanizeRepo
+Repair-HumanizeCodexHookProbe
 Ensure-CuratedSuperpowersSkills
 
 Ensure-FileSymlink -Source (Join-Path $SourceDir "CLAUDE.md") -Target (Join-Path $TargetHome ".claude\CLAUDE.md")
