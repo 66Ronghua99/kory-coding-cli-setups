@@ -32,6 +32,12 @@ assert_file_contains() {
   grep -Fq -- "$expected" "$path" || fail "Expected $path to contain: $expected"
 }
 
+assert_file_not_contains() {
+  local path="$1"
+  local unexpected="$2"
+  ! grep -Fq -- "$unexpected" "$path" || fail "Expected $path not to contain: $unexpected"
+}
+
 assert_symlink_target() {
   local path="$1"
   local expected="$2"
@@ -39,6 +45,11 @@ assert_symlink_target() {
   local actual
   actual="$(readlink "$path")"
   [[ "$actual" == "$expected" ]] || fail "Expected $path -> $expected, got $actual"
+}
+
+assert_regular_file() {
+  local path="$1"
+  [[ -f "$path" && ! -L "$path" ]] || fail "Expected regular file: $path"
 }
 
 assert_skill_version() {
@@ -110,6 +121,24 @@ if grep -Fq "grep -qE '^codex_hooks" "$script_dir/install-codex-hooks.sh"; then
   printf 'unpatched codex_hooks probe\n' >&2
   exit 1
 fi
+mkdir -p "$HOME/.codex"
+cat > "$HOME/.codex/hooks.json" <<'JSON'
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "humanize/hooks/loop-codex-stop-hook.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "description": "Humanize Codex Hooks"
+}
+JSON
 printf 'install-skill %s HOME=%s\n' "$*" "${HOME:-}" >> "${HUMANIZE_INSTALL_LOG:?}"
 EOF
     chmod +x scripts/install-skill.sh scripts/install-codex-hooks.sh
@@ -316,6 +345,65 @@ test_rerun_is_idempotent_when_links_are_correct() {
   assert_not_exists "$home_dir/.coding-cli-sync-backups"
 }
 
+test_codex_config_is_not_overwritten_by_default() {
+  local tempdir
+  tempdir="$(mktemp -d)"
+  local source="$tempdir/source"
+  local home_dir="$tempdir/home"
+  local remote_root="$tempdir/remote"
+  local remote_url="$remote_root/superpowers-remote.git"
+  make_fake_source "$source"
+  make_superpowers_remote "$remote_root" "v1"
+  make_humanize_remote "$remote_root" "v1"
+  mkdir -p "$home_dir/.codex"
+  printf 'local-config\n' > "$home_dir/.codex/config.toml"
+
+  run_sync "$source" "$home_dir" "$remote_url" "main"
+
+  assert_regular_file "$home_dir/.codex/config.toml"
+  assert_file_contains "$home_dir/.codex/config.toml" "local-config"
+  assert_file_not_contains "$home_dir/.codex/config.toml" 'model = "gpt-5.4"'
+}
+
+test_codex_config_symlink_is_converted_to_regular_file() {
+  local tempdir
+  tempdir="$(mktemp -d)"
+  local source="$tempdir/source"
+  local home_dir="$tempdir/home"
+  local remote_root="$tempdir/remote"
+  local remote_url="$remote_root/superpowers-remote.git"
+  make_fake_source "$source"
+  make_superpowers_remote "$remote_root" "v1"
+  make_humanize_remote "$remote_root" "v1"
+  mkdir -p "$home_dir/.codex"
+  ln -s "$source/.codex/config.toml" "$home_dir/.codex/config.toml"
+
+  run_sync "$source" "$home_dir" "$remote_url" "main"
+
+  assert_regular_file "$home_dir/.codex/config.toml"
+  assert_file_contains "$home_dir/.codex/config.toml" 'model = "gpt-5.4"'
+}
+
+test_codex_config_can_be_copied_with_explicit_flag() {
+  local tempdir
+  tempdir="$(mktemp -d)"
+  local source="$tempdir/source"
+  local home_dir="$tempdir/home"
+  local remote_root="$tempdir/remote"
+  local remote_url="$remote_root/superpowers-remote.git"
+  make_fake_source "$source"
+  make_superpowers_remote "$remote_root" "v1"
+  make_humanize_remote "$remote_root" "v1"
+  mkdir -p "$home_dir/.codex"
+  printf 'local-config\n' > "$home_dir/.codex/config.toml"
+
+  run_sync "$source" "$home_dir" "$remote_url" "main" --sync-codex-config
+
+  assert_regular_file "$home_dir/.codex/config.toml"
+  assert_file_contains "$home_dir/.codex/config.toml" 'model = "gpt-5.4"'
+  assert_file_not_contains "$home_dir/.codex/config.toml" "local-config"
+}
+
 test_existing_non_git_superpowers_path_fails() {
   local tempdir
   tempdir="$(mktemp -d)"
@@ -396,6 +484,8 @@ test_sync_installs_humanize_rlcr_for_codex() {
   assert_file_contains "$source/humanize/VERSION" "humanize v1"
   assert_file_contains "$install_log" "install-skill --target codex"
   assert_file_contains "$install_log" "HOME=$home_dir"
+  assert_file_contains "$home_dir/.codex/hooks.json" '"hooks"'
+  assert_file_not_contains "$home_dir/.codex/hooks.json" '"description"'
 }
 
 test_sync_updates_humanize_checkout_on_rerun() {
@@ -465,6 +555,9 @@ run_selected_tests() {
     test_sync_pulls_latest_superpowers_content
     test_conflicting_targets_are_backed_up
     test_rerun_is_idempotent_when_links_are_correct
+    test_codex_config_is_not_overwritten_by_default
+    test_codex_config_symlink_is_converted_to_regular_file
+    test_codex_config_can_be_copied_with_explicit_flag
     test_existing_non_git_superpowers_path_fails
     test_legacy_namespace_is_replaced
     test_invalid_remote_fails_cleanly

@@ -11,6 +11,7 @@ HUMANIZE_REMOTE_URL="${HUMANIZE_REMOTE_URL:-https://github.com/PolyArch/humanize
 HUMANIZE_BRANCH="${HUMANIZE_BRANCH:-main}"
 BACKUP_ROOT="${HOME}/.coding-cli-sync-backups/$(date +%Y%m%d_%H%M%S)"
 DRY_RUN=0
+SYNC_CODEX_CONFIG=0
 CURATED_SUPERPOWERS_SKILLS=(
   using-superpowers
   brainstorming
@@ -51,6 +52,9 @@ parse_args() {
     case "$1" in
       --dry-run)
         DRY_RUN=1
+        ;;
+      --sync-codex-config)
+        SYNC_CODEX_CONFIG=1
         ;;
       *)
         die "Unknown argument: $1"
@@ -174,6 +178,31 @@ PY
 install_humanize_codex_rlcr() {
   [[ "$HUMANIZE_SYNC" != "0" ]] || return 0
   run_cmd "$HUMANIZE_DIR/scripts/install-skill.sh" --target codex
+  sanitize_codex_hooks_config
+}
+
+sanitize_codex_hooks_config() {
+  [[ "$HUMANIZE_SYNC" != "0" ]] || return 0
+  local hooks_file="${HOME}/.codex/hooks.json"
+  [[ -f "$hooks_file" ]] || return 0
+
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    log "[dry-run] remove unsupported top-level description from $hooks_file"
+    return 0
+  fi
+
+  command -v python3 >/dev/null 2>&1 || die "python3 is required to sanitize Codex hooks config"
+  python3 - "$hooks_file" <<'PY'
+import json
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+data = json.loads(path.read_text(encoding="utf-8"))
+if isinstance(data, dict) and "description" in data:
+    data.pop("description", None)
+    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+PY
 }
 
 cleanup_legacy_superpowers_namespace() {
@@ -206,6 +235,46 @@ ensure_codex_skills_links() {
     name="$(basename "$path")"
     ensure_symlink "$path" "$codex_skills_dir/$name"
   done
+}
+
+ensure_codex_config_file() {
+  local source_config="$SOURCE_DIR/.codex/config.toml"
+  local target_config="${HOME}/.codex/config.toml"
+
+  ensure_dir "$(dirname "$target_config")"
+  [[ -f "$source_config" ]] || die "Missing source Codex config: $source_config"
+
+  if [[ "$SYNC_CODEX_CONFIG" -eq 1 ]]; then
+    if [[ -L "$target_config" ]]; then
+      run_cmd rm "$target_config"
+    fi
+    run_cmd cp "$source_config" "$target_config"
+    log "Copied Codex config: $source_config -> $target_config"
+    return
+  fi
+
+  if [[ -L "$target_config" ]]; then
+    local linked_config
+    linked_config="$(readlink "$target_config")"
+    [[ -f "$linked_config" ]] || die "Codex config symlink points to a missing file: $target_config -> $linked_config"
+    if [[ "$DRY_RUN" -eq 1 ]]; then
+      log "[dry-run] replace Codex config symlink with regular file copied from $linked_config"
+      return
+    fi
+    local tmp_config
+    tmp_config="$(mktemp "${target_config}.tmp.XXXXXX")"
+    cp "$linked_config" "$tmp_config"
+    rm "$target_config"
+    mv "$tmp_config" "$target_config"
+    log "Converted Codex config symlink to regular file: $target_config"
+    return
+  fi
+
+  if [[ -e "$target_config" ]]; then
+    log "Keeping existing Codex config file: $target_config"
+  else
+    log "Codex config file missing; pass --sync-codex-config to create it from $source_config"
+  fi
 }
 
 main() {
@@ -245,7 +314,7 @@ main() {
 
   # Codex
   ensure_symlink "$SOURCE_DIR/AGENTS.md" "${HOME}/.codex/AGENTS.md"
-  ensure_symlink "$SOURCE_DIR/.codex/config.toml" "${HOME}/.codex/config.toml"
+  ensure_codex_config_file
   ensure_symlink "$SOURCE_DIR/.codex/agents" "${HOME}/.codex/agents"
   ensure_codex_skills_links
   install_humanize_codex_rlcr

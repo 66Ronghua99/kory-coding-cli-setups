@@ -33,3 +33,8 @@
 - Mirrored the repair in `sync-agent-links.ps1`; local PowerShell execution remains a verification gap because `pwsh` is not installed here.
 - Verified with `bash tests/sync-agent-links/test-sync-agent-links.sh` and a real `./sync-agent-links.sh` run.
 - Confirmed Codex install results: `humanize`, `humanize-gen-plan`, `humanize-refine-plan`, and `humanize-rlcr` exist under `~/.codex/skills`; the Humanize runtime bundle exists; `~/.codex/hooks.json` contains `loop-codex-stop-hook.sh`; `.codex/config.toml` has `codex_hooks = true`.
+
+## 2026-06-19
+
+- Changed Codex config sync so `~/.codex/config.toml` is no longer linked by default. The sync scripts keep existing regular config files, convert legacy config symlinks to regular files, and only copy `.codex/config.toml` when explicitly requested with `--sync-codex-config` or `-SyncCodexConfig`.
+- Removed device-specific `[projects."..."]` trust entries from the repo-level `.codex/config.toml` while preserving the current user-level config shape.

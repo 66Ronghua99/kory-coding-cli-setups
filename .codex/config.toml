@@ -3,7 +3,7 @@
 model = "gpt-5.5"
 # model_provider = "openai"
 model_provider = "chatgpt-http"
-model_reasoning_effort = "high"
+model_reasoning_effort = "medium"
 approval_policy = "never"
 sandbox_mode = "workspace-write"
 personality = "friendly"
@@ -22,7 +22,7 @@ supports_websockets = false
 multi_agent = true
 hooks = true
 js_repl = false
-codex_hooks = true
+# codex_hooks = true
 
 [agents]
 max_threads = 10
@@ -40,33 +40,6 @@ config_file = "agents/architect.toml"
 description = "Read-only correctness and regression reviewer focused on bugs, risk, and missing tests."
 config_file = "agents/reviewer.toml"
 
-[projects."/Users/cory/codes/openclaw"]
-trust_level = "trusted"
-
-[projects."/Users/cory/codes/Sasiki"]
-trust_level = "trusted"
-
-[projects."/Users/cory/.claude"]
-trust_level = "trusted"
-
-[projects."/Users/cory/codes/Sasiki-dev"]
-trust_level = "trusted"
-
-[projects."/Users/cory/codes/Kory_whisper"]
-trust_level = "trusted"
-
-[projects."/Users/cory/.coding-cli"]
-trust_level = "trusted"
-
-[projects."/Users/cory/papers/writings"]
-trust_level = "trusted"
-
-[projects."/Users/cory/codes/TPRL_misc"]
-trust_level = "trusted"
-
-[projects."/Users/cory/codes/MMContext"]
-trust_level = "trusted"
-
 [mcp_servers.playwright]
 args = ["@playwright/mcp@latest"]
 command = "npx"
@@ -82,12 +55,12 @@ NODE_REPL_NODE_MODULE_DIRS = "/Applications/Codex.app/Contents/Resources/cua_nod
 NODE_REPL_NODE_PATH = "/Applications/Codex.app/Contents/Resources/cua_node/bin/node"
 NODE_REPL_TRUSTED_CODE_PATHS = "/Users/cory/.codex"
 CODEX_HOME = "/Users/cory/.codex"
-NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "27dca86fd6b571c49414a4b78e46b57bcf683a46cd1319799c11fbb6cfae3110"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "eb55d24cf065cd5311af6f99b16bade2b7a670790ff2db9accf60d012dd55dd1"
 BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
 NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
 NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.609.41114"
+BROWSER_USE_CODEX_APP_VERSION = "26.611.62324"
 CODEX_CLI_PATH = "/Applications/Codex.app/Contents/Resources/codex"
 
 [sandbox_workspace_write]
@@ -120,7 +93,7 @@ enabled = true
 trusted_hash = "sha256:a0e00cb8957dbacd21e1a094c91bda5c3ee668f89f26ffc2463604191ed05112"
 
 [marketplaces.openai-bundled]
-last_updated = "2026-06-15T08:15:46Z"
+last_updated = "2026-06-18T08:38:14Z"
 source_type = "local"
 source = "/Users/cory/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
@@ -128,3 +101,6 @@ source = "/Users/cory/.codex/.tmp/bundled-marketplaces/openai-bundled"
 last_updated = "2026-06-15T01:24:34Z"
 source_type = "local"
 source = "/Users/cory/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
+
+[tui.model_availability_nux]
+"gpt-5.5" = 2

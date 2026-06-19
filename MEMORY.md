@@ -17,7 +17,8 @@
 - Humanize RLCR sync is owned by [`sync-agent-links.sh`](/Users/cory/.coding-cli/sync-agent-links.sh) and mirrored in [`sync-agent-links.ps1`](/Users/cory/.coding-cli/sync-agent-links.ps1): by default they manage a root-level ignored `humanize/` checkout from `https://github.com/PolyArch/humanize.git`, fast-forward it, and invoke `humanize/scripts/install-skill.sh --target codex` to install/update the Codex RLCR execution gate.
 - Humanize remains an execution gate only in this user-level workflow. Superpowers specs and plans remain the planning source of truth; Humanize `gen-plan` and `refine-plan` are not the primary planning path.
 - Humanize sync can be disabled with `HUMANIZE_SYNC=0`, and `HUMANIZE_DIR`, `HUMANIZE_REMOTE_URL`, and `HUMANIZE_BRANCH` override the managed checkout location/source.
-- On Windows, `sync-agent-links.ps1` falls back to hard links for file targets like `CLAUDE.md`, `AGENTS.md`, and `config.toml` when symbolic-link privilege is unavailable; directory targets still fall back to junctions.
+- Codex `config.toml` is intentionally not linked. `sync-agent-links` keeps an existing regular `~/.codex/config.toml` by default, converts legacy config symlinks into regular files, and only copies the repo config when `--sync-codex-config` / `-SyncCodexConfig` is passed explicitly.
+- On Windows, `sync-agent-links.ps1` falls back to hard links for file targets like `CLAUDE.md` and `AGENTS.md` when symbolic-link privilege is unavailable; directory targets still fall back to junctions.
 - Windows backup paths must be normalized under `.coding-cli-sync-backups/<timestamp>/<drive>/...`; appending raw absolute paths creates invalid or misleading backup destinations.
 - `grill-with-docs` is adapted for this workflow as a Superpowers spec-hardening skill. Its default output is inline spec improvement plus necessary `NEXT_STEP.md`/plan synchronization, not automatic `CONTEXT.md` or ADR creation.
 

@@ -1,5 +1,6 @@
 param(
-    [switch]$DryRun
+    [switch]$DryRun,
+    [switch]$SyncCodexConfig
 )
 
 Set-StrictMode -Version Latest
@@ -380,6 +381,30 @@ function Install-HumanizeCodexRlcr {
             $env:CODEX_HOME = $oldCodexHome
         }
     }
+
+    Repair-CodexHooksConfig
+}
+
+function Repair-CodexHooksConfig {
+    if ($HumanizeSync -eq "0") {
+        return
+    }
+
+    $hooksFile = Join-Path $TargetHome ".codex\hooks.json"
+    if (-not (Test-Path -LiteralPath $hooksFile -PathType Leaf)) {
+        return
+    }
+
+    if ($DryRun) {
+        Write-Host "[dry-run] remove unsupported top-level description from $hooksFile"
+        return
+    }
+
+    $json = Get-Content -LiteralPath $hooksFile -Raw | ConvertFrom-Json
+    if ($json.PSObject.Properties.Name -contains "description") {
+        $json.PSObject.Properties.Remove("description")
+        $json | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $hooksFile
+    }
 }
 
 function Cleanup-LegacySuperpowersNamespace {
@@ -413,6 +438,55 @@ function Ensure-CodexSkillLinks {
     }
 }
 
+function Ensure-CodexConfigFile {
+    $sourceConfig = Join-Path (Join-Path $SourceDir ".codex") "config.toml"
+    $targetConfig = Join-Path $TargetHome ".codex\config.toml"
+
+    Ensure-Dir (Split-Path -Parent $targetConfig)
+    if (-not (Test-Path -LiteralPath $sourceConfig -PathType Leaf)) {
+        throw "Missing source Codex config: $sourceConfig"
+    }
+
+    $targetItem = if (Test-Path -LiteralPath $targetConfig) { Get-Item -LiteralPath $targetConfig -Force } else { $null }
+    $isLink = $null -ne $targetItem -and $null -ne $targetItem.PSObject.Properties["LinkType"] -and $null -ne $targetItem.LinkType
+
+    if ($SyncCodexConfig) {
+        if ($isLink) {
+            Invoke-Step "remove Codex config link $targetConfig" {
+                Remove-Item -LiteralPath $targetConfig
+            }
+        }
+        Invoke-Step "copy Codex config $sourceConfig -> $targetConfig" {
+            Copy-Item -LiteralPath $sourceConfig -Destination $targetConfig -Force
+        }
+        Log "Copied Codex config: $sourceConfig -> $targetConfig"
+        return
+    }
+
+    if ($isLink) {
+        $linkedTargets = @(Get-LinkTargets $targetConfig)
+        if ($linkedTargets.Count -lt 1 -or -not (Test-Path -LiteralPath $linkedTargets[0] -PathType Leaf)) {
+            throw "Codex config symlink points to a missing file: $targetConfig"
+        }
+        if ($DryRun) {
+            Write-Host "[dry-run] replace Codex config symlink with regular file copied from $($linkedTargets[0])"
+            return
+        }
+        $tempConfig = [System.IO.Path]::GetTempFileName()
+        Copy-Item -LiteralPath $linkedTargets[0] -Destination $tempConfig -Force
+        Remove-Item -LiteralPath $targetConfig
+        Move-Item -LiteralPath $tempConfig -Destination $targetConfig
+        Log "Converted Codex config symlink to regular file: $targetConfig"
+        return
+    }
+
+    if (Test-Path -LiteralPath $targetConfig) {
+        Log "Keeping existing Codex config file: $targetConfig"
+    } else {
+        Log "Codex config file missing; pass -SyncCodexConfig to create it from $sourceConfig"
+    }
+}
+
 Log "Source directory: $SourceDir"
 Log "Superpowers directory: $SuperpowersDir"
 Log "Superpowers remote: $SuperpowersRemoteUrl"
@@ -442,7 +516,7 @@ Ensure-DirectoryLink -Source (Join-Path $SourceDir "skills") -Target (Join-Path 
 Ensure-FileSymlink -Source (Join-Path $SourceDir "AGENTS.md") -Target (Join-Path $TargetHome ".copilot\AGENTS.md")
 
 Ensure-FileSymlink -Source (Join-Path $SourceDir "AGENTS.md") -Target (Join-Path $TargetHome ".codex\AGENTS.md")
-Ensure-FileSymlink -Source (Join-Path $SourceDir ".codex\config.toml") -Target (Join-Path $TargetHome ".codex\config.toml")
+Ensure-CodexConfigFile
 Ensure-DirectoryLink -Source (Join-Path $SourceDir ".codex\agents") -Target (Join-Path $TargetHome ".codex\agents")
 Ensure-CodexSkillLinks
 Install-HumanizeCodexRlcr
