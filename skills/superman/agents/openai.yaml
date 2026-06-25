@@ -1,0 +1,4 @@
+interface:
+  display_name: "Superman"
+  short_description: "Macro workflow router for large feature delivery"
+  default_prompt: "Use $superman to route and run a large feature from design through Humanize execution."

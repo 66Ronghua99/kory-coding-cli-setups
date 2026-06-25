@@ -1,8 +1,8 @@
 # Migration After Example
 
-A healthy migration bootstrap adds missing governance docs and context without changing existing application behavior.
+A healthy migration bootstrap adds missing governance docs without changing existing application behavior.
 
 Typical next action:
 
-- audit `docs/project/current-state.md`
+- audit the repository topology only when a later spec or migration task needs it
 - write the first approved migration spec through Superpowers

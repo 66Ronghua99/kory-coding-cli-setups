@@ -11,6 +11,10 @@ if [[ ! -d "$TARGET_DIR" ]]; then
 fi
 
 while IFS= read -r -d '' path; do
+  if [[ "$path" == "$SKELETON_DIR" ]]; then
+    continue
+  fi
+
   rel_path="${path#$SKELETON_DIR/}"
   dest_path="$TARGET_DIR/$rel_path"
 
@@ -24,23 +28,5 @@ while IFS= read -r -d '' path; do
     cp "$path" "$dest_path"
   fi
 done < <(find "$SKELETON_DIR" \( -type d -o -type f \) -print0)
-
-state_file="$TARGET_DIR/docs/project/current-state.md"
-if [[ ! -f "$state_file" ]]; then
-  {
-    echo "# Current State"
-    echo
-    echo "## Detected Markers"
-    for marker in .git package.json pyproject.toml go.mod Cargo.toml src app lib; do
-      if [[ -e "$TARGET_DIR/$marker" ]]; then
-        echo "- $marker"
-      fi
-    done
-    echo
-    echo "## Follow-Up"
-    echo "- Review repository topology and update architecture/testing docs where skeleton defaults are too generic"
-    echo "- Use Superpowers to write the first approved migration spec before code changes"
-  } > "$state_file"
-fi
 
 echo "migration-bootstrap-complete"

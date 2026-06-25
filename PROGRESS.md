@@ -38,3 +38,44 @@
 
 - Changed Codex config sync so `~/.codex/config.toml` is no longer linked by default. The sync scripts keep existing regular config files, convert legacy config symlinks to regular files, and only copy `.codex/config.toml` when explicitly requested with `--sync-codex-config` or `-SyncCodexConfig`.
 - Removed device-specific `[projects."..."]` trust entries from the repo-level `.codex/config.toml` while preserving the current user-level config shape.
+
+## 2026-06-24
+
+- Added `skills/superman` as the user-level macro router for code work: lightweight path, Superpowers design/planning, Humanize RLCR execution, and doc-health routing.
+- Updated `AGENTS.md` and `MEMORY.md` so the default flow is Superman routing, Superpowers brainstorm/write-plans, and Humanize execution evidence.
+- Removed `skills/harness-lint-test-design` and `skills/harness-refactor` from the shared skills library.
+- Updated `sync-agent-links.sh` and `sync-agent-links.ps1` so deprecated Codex skill links for those two removed skills are backed up/cleared on sync.
+- Verified with `bash tests/sync-agent-links/test-sync-agent-links.sh`, `./sync-agent-links.sh --dry-run`, and `quick_validate.py` for `skills/superman` using `/Users/cory/anaconda3/bin/python` because the system Python lacks `PyYAML`; PowerShell execution remains a local gap because `pwsh` is unavailable.
+- Slimmed `harness:init` bootstrap output to root collaboration docs, `docs/project/README.md`, and `docs/superpowers/templates/`, removing skeleton hooks, `.gitignore`, preset TOML machinery, `.harness`, `artifacts`, and default architecture/testing docs.
+- Fixed migration bootstrap path handling so the skeleton root itself is skipped instead of being copied as an absolute-path-derived `Users/...` tree.
+- Verified with greenfield and migration smoke bootstraps in temporary directories plus `bash harness-bootstrap/scripts/validate_bootstrap.sh` for each generated target and for `/Users/cory/.coding-cli`.
+
+## 2026-06-25
+
+- Added Kimi Code CLI support to the one-click sync scripts.
+  - `sync-agent-links.sh` now links `AGENTS.md` to `$KIMI_CODE_HOME/AGENTS.md` (default `~/.kimi-code/AGENTS.md`) and the curated `skills/` directory to `$KIMI_CODE_HOME/skills`.
+  - `sync-agent-links.ps1` mirrors the same Kimi links on Windows, using the existing file/directory symlink helpers with hard-link/junction fallbacks.
+  - Both scripts honor the `KIMI_CODE_HOME` environment variable to override the default data root.
+- Fixed Humanize RLCR sync so Kimi receives the same skills and runtime bundle as Codex.
+  - `sync-agent-links.sh` and `sync-agent-links.ps1` now invoke `humanize/scripts/install-skill.sh --target both --kimi-skills-dir <shared>/skills --codex-skills-dir <shared>/skills` so the runtime is installed into the shared `skills/` directory that Kimi already symlinks.
+  - `ensure_codex_skills_links` now runs after the Humanize install so `~/.codex/skills/humanize*` are symlinked to the shared runtime instead of being left as standalone copies.
+- Added runtime patch for Codex CLI feature-name drift: current Codex CLI (`0.142.0`) exposes the native hooks feature as `hooks` instead of `codex_hooks`, and `codex features enable codex_hooks` only works because the CLI silently aliases it. The sync scripts now detect the available feature name and patch `humanize/scripts/install-codex-hooks.sh` to use `hooks` on newer CLI versions while keeping the `awk`-based probe that avoids `pipefail`/`SIGPIPE` false negatives.
+- Verified with `bash tests/sync-agent-links/test-sync-agent-links.sh` (PASS). Updated the bash test fixture to support `--target both` and added assertions that Kimi sees `humanize/SKILL.md` and `humanize/hooks/loop-kimi-stop-hook.sh`. Updated the PowerShell test to create a fake Humanize remote and added a corresponding Kimi/Codex Humanize install assertion.
+- Verified a real `./sync-agent-links.sh` run successfully installed Humanize for both targets and updated `~/.codex/hooks.json` to point at `/Users/cory/.coding-cli/skills/humanize/hooks/loop-codex-stop-hook.sh`.
+- Confirmed the resulting layout:
+  - `~/.kimi-code/skills/humanize` -> `/Users/cory/.coding-cli/skills/humanize` (via `~/.kimi-code/skills` -> `/Users/cory/.coding-cli/skills`)
+  - `~/.codex/skills/humanize` -> `/Users/cory/.coding-cli/skills/humanize`
+  - `~/.codex/hooks.json` contains the Humanize Stop hook command
+- Added Kimi native Stop hook support so RLCR review gating can run from Kimi sessions.
+  - `sync-agent-links.sh` and `sync-agent-links.ps1` now install a `loop-kimi-stop-hook.sh` wrapper into the shared Humanize runtime.
+  - The wrapper consumes Kimi's stdin JSON event, delegates to `loop-codex-stop-hook.sh`, and translates the Claude-style `{"decision": "block", ...}` stdout protocol into Kimi's `exit 2` blocking semantics.
+  - The sync scripts register the wrapper in `~/.kimi-code/config.toml` under `[[hooks]]` with `event = "Stop"` and `timeout = 600`.
+  - Verified the wrapper blocks when Humanize loop preconditions are missing and allows exit once all loop state, summary, review, finalize, and methodology-analysis checks pass.
+- Ran an end-to-end smoke test in `/tmp/kimi-rlcr-e2e-test`:
+  - Started an RLCR loop with `setup-rlcr-loop.sh`
+  - Completed round 0 (contract, implementation, summary, goal tracker)
+  - Triggered the Kimi Stop hook wrapper manually with a Kimi-style JSON event on stdin
+  - Observed the wrapper drive `codex exec` summary review, `codex review` code review, finalize phase, and methodology analysis
+  - Final hook invocation returned `exit 0`, confirming the bridge works
+- Re-runs of `./sync-agent-links.sh` still hit intermittent GitHub timeouts (`fatal: unable to access 'https://github.com/...': Recv failure: Operation timed out`). This is a network/GitHub reachability issue, not a yolo sandbox issue; the repos are already present locally so the install/link phases work once the initial `git pull` succeeds.
+- PowerShell execution remains a local verification gap because `pwsh` is not installed on this macOS workspace.

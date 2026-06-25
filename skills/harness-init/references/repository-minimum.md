@@ -7,9 +7,6 @@ A bootstrapped repository is considered minimally initialized when it contains:
 - `MEMORY.md`
 - `NEXT_STEP.md`
 - `docs/project/README.md`
-- `docs/architecture/overview.md`
-- `docs/architecture/layers.md`
-- `docs/testing/strategy.md`
 - `docs/superpowers/templates/SPEC_TEMPLATE.md`
 - `docs/superpowers/templates/PLAN_TEMPLATE.md`
 - `docs/superpowers/templates/CHANGE_REQUEST_TEMPLATE.md`

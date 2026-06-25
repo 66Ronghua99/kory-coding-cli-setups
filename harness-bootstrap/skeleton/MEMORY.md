@@ -7,12 +7,10 @@
 - Template files under `docs/superpowers/templates/` define the required document shape.
 - Harness skills define governance standards; Superpowers drives workflow execution.
 - `harness:doc-health` owns repository truth and pointer consistency.
-- `harness:lint-test-design` owns lint/test invariant and hardgate design.
-- `harness:refactor` owns architecture-drift review and refactor governance.
 
 ## Working Heuristics
 
 - Keep repository-local docs ahead of implementation drift.
-- Encode repeated review feedback into templates, lint, tests, or recurring refactor work.
+- Encode repeated review feedback into templates, focused tests, documented follow-up tasks, or small cleanup plans.
 - Prefer explicit failure semantics over silent fallback behavior.
-- Route stale docs to `harness:doc-health`, enforceable recurring issues to `harness:lint-test-design`, and architecture erosion to `harness:refactor`.
+- Route stale docs to `harness:doc-health`; use normal tests, review, and concrete follow-up tasks for implementation quality issues.

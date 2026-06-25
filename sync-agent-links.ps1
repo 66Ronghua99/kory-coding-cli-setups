@@ -15,6 +15,7 @@ $HumanizeSync = if ($env:HUMANIZE_SYNC) { $env:HUMANIZE_SYNC } else { "1" }
 $HumanizeDir = if ($env:HUMANIZE_DIR) { $env:HUMANIZE_DIR } else { Join-Path $SourceDir "humanize" }
 $HumanizeRemoteUrl = if ($env:HUMANIZE_REMOTE_URL) { $env:HUMANIZE_REMOTE_URL } else { "https://github.com/PolyArch/humanize.git" }
 $HumanizeBranch = if ($env:HUMANIZE_BRANCH) { $env:HUMANIZE_BRANCH } else { "main" }
+$KimiCodeHome = if ($env:KIMI_CODE_HOME) { $env:KIMI_CODE_HOME } else { Join-Path $TargetHome ".kimi-code" }
 $BackupRoot = Join-Path $TargetHome (".coding-cli-sync-backups\" + (Get-Date -Format "yyyyMMdd_HHmmss"))
 $CuratedSuperpowersSkills = @(
     "using-superpowers",
@@ -23,6 +24,10 @@ $CuratedSuperpowersSkills = @(
     "executing-plans",
     "test-driven-development",
     "verification-before-completion"
+)
+$DeprecatedCodexSkills = @(
+    "harness-lint-test-design",
+    "harness-refactor"
 )
 
 function Log {
@@ -100,10 +105,25 @@ function Test-SameVolume {
     return [string]::Equals($leftRoot, $rightRoot, [System.StringComparison]::OrdinalIgnoreCase)
 }
 
+function Test-PathOrLink {
+    param([string]$Path)
+
+    if (Test-Path -LiteralPath $Path) {
+        return $true
+    }
+
+    try {
+        Get-Item -LiteralPath $Path -Force -ErrorAction Stop | Out-Null
+        return $true
+    } catch {
+        return $false
+    }
+}
+
 function Backup-Path {
     param([string]$Target)
 
-    if (Test-Path -LiteralPath $Target) {
+    if (Test-PathOrLink $Target) {
         Ensure-Dir $BackupRoot
         $relative = Get-BackupRelativePath $Target
         $backupTarget = Join-Path $BackupRoot $relative
@@ -350,13 +370,50 @@ function Repair-HumanizeCodexHookProbe {
     Log "Patched Humanize codex_hooks feature probe: $hooksInstaller"
 }
 
-function Install-HumanizeCodexRlcr {
+function Repair-HumanizeCodexHooksFeatureName {
+    if ($HumanizeSync -eq "0") {
+        return
+    }
+
+    $hooksInstaller = Join-Path (Join-Path $HumanizeDir "scripts") "install-codex-hooks.sh"
+    if (-not (Test-Path -LiteralPath $hooksInstaller -PathType Leaf)) {
+        return
+    }
+
+    $featureName = ""
+    if (Get-Command codex -ErrorAction SilentlyContinue) {
+        $features = codex features list 2>$null
+        if ($features -match "^hooks\s") {
+            $featureName = "hooks"
+        } elseif ($features -match "^codex_hooks\s") {
+            $featureName = "codex_hooks"
+        }
+    }
+
+    if ($featureName -eq "") {
+        return
+    }
+
+    if ($DryRun) {
+        Write-Host "[dry-run] patch Humanize codex_hooks feature name to $featureName in $hooksInstaller"
+        return
+    }
+
+    $content = Get-Content -LiteralPath $hooksInstaller -Raw
+    if ($content.Contains("codex_hooks")) {
+        $content = $content.Replace("codex_hooks", $featureName)
+        Set-Content -LiteralPath $hooksInstaller -Value $content -NoNewline
+        Log "Patched Humanize codex_hooks feature name to $featureName: $hooksInstaller"
+    }
+}
+
+function Install-HumanizeRlcr {
     if ($HumanizeSync -eq "0") {
         return
     }
 
     if (-not (Get-Command bash -ErrorAction SilentlyContinue)) {
-        throw "bash is required to run Humanize's Codex installer. Install bash or set HUMANIZE_SYNC=0."
+        throw "bash is required to run Humanize's installer. Install bash or set HUMANIZE_SYNC=0."
     }
 
     $installer = Join-Path (Join-Path $HumanizeDir "scripts") "install-skill.sh"
@@ -365,8 +422,9 @@ function Install-HumanizeCodexRlcr {
     try {
         $env:HOME = $TargetHome
         $env:CODEX_HOME = Join-Path $TargetHome ".codex"
-        Invoke-NativeChecked "Humanize Codex RLCR install" {
-            bash $installer --target codex
+        $sharedSkillsDir = Join-Path $SourceDir "skills"
+        Invoke-NativeChecked "Humanize RLCR install" {
+            bash $installer --target both --kimi-skills-dir "$sharedSkillsDir" --codex-skills-dir "$sharedSkillsDir"
         }
     } finally {
         if ($null -eq $oldHome) {
@@ -407,6 +465,131 @@ function Repair-CodexHooksConfig {
     }
 }
 
+function Install-KimiStopHookWrapper {
+    if ($HumanizeSync -eq "0") {
+        return
+    }
+
+    $hooksDir = Join-Path (Join-Path (Join-Path $SourceDir "skills") "humanize") "hooks"
+    $wrapper = Join-Path $hooksDir "loop-kimi-stop-hook.sh"
+
+    if ($DryRun) {
+        Write-Host "[dry-run] install Kimi Stop hook wrapper: $wrapper"
+        return
+    }
+
+    Ensure-Dir $hooksDir
+
+    $wrapperContent = @'
+#!/usr/bin/env bash
+#
+# Kimi native Stop hook adapter for Humanize RLCR.
+#
+# Kimi passes the hook event as JSON via stdin and expects:
+#   exit 0  -> allow the stop
+#   exit 2  -> block the stop (stderr is shown as the reason)
+#
+# Humanize's loop-codex-stop-hook.sh speaks the Claude Code hook protocol:
+#   stdout contains JSON {"decision": "block", "reason": "..."} and exits 0.
+# This wrapper converts between the two protocols.
+#
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+CODEX_STOP_HOOK="$SCRIPT_DIR/loop-codex-stop-hook.sh"
+
+TMP_OUTPUT="$(mktemp)"
+trap 'rm -f "$TMP_OUTPUT"' EXIT
+
+# The Codex/Claude hook reads stdin itself (it expects Claude-style hook JSON).
+# It writes its decision JSON to stdout; we capture stdout while letting stderr
+# flow through to Kimi so progress/review output is visible.
+if ! "$CODEX_STOP_HOOK" >"$TMP_OUTPUT"; then
+  echo "Humanize stop hook failed with exit code $?. Blocking exit." >&2
+  exit 2
+fi
+
+# Parse the Claude-style decision from stdout.
+DECISION=""
+REASON=""
+if command -v jq >/dev/null 2>&1; then
+  DECISION="$(jq -r '.decision // empty' "$TMP_OUTPUT" 2>/dev/null || echo "")"
+  REASON="$(jq -r '.reason // "Blocked by Humanize RLCR stop hook."' "$TMP_OUTPUT" 2>/dev/null || echo "Blocked by Humanize RLCR stop hook.")"
+else
+  # Minimal fallback if jq is missing: grep for the decision field.
+  DECISION="$(grep -o '"decision"[[:space:]]*:[[:space:]]*"[^"]*"' "$TMP_OUTPUT" 2>/dev/null | head -1 | sed 's/.*"\([^"]*\)"$/\1/' || echo "")"
+  REASON="Blocked by Humanize RLCR stop hook."
+fi
+
+if [[ "$DECISION" == "block" ]]; then
+  echo "$REASON" >&2
+  exit 2
+fi
+
+exit 0
+'@
+
+    Set-Content -LiteralPath $wrapper -Value $wrapperContent -NoNewline
+    Log "Installed Kimi Stop hook wrapper: $wrapper"
+}
+
+function Ensure-KimiStopHookConfig {
+    if ($HumanizeSync -eq "0") {
+        return
+    }
+
+    $kimiConfig = Join-Path $KimiCodeHome "config.toml"
+    $wrapper = Join-Path (Join-Path (Join-Path $SourceDir "skills") "humanize") "hooks\loop-kimi-stop-hook.sh"
+
+    Ensure-Dir (Split-Path -Parent $kimiConfig)
+
+    if ($DryRun) {
+        Write-Host "[dry-run] ensure Kimi Stop hook config in $kimiConfig"
+        return
+    }
+
+    if (-not (Get-Command python3 -ErrorAction SilentlyContinue)) {
+        throw "python3 is required to update Kimi config"
+    }
+
+    $pythonScript = @"
+import pathlib
+import sys
+
+try:
+    import tomllib
+except ImportError:
+    import tomli as tomllib
+import toml
+
+config_path = pathlib.Path(sys.argv[1])
+hook_command = sys.argv[2]
+
+data = {}
+if config_path.exists():
+    data = tomllib.loads(config_path.read_text(encoding="utf-8"))
+
+hooks = data.setdefault("hooks", [])
+
+already_registered = any(
+    isinstance(h, dict) and h.get("event") == "Stop" and h.get("command") == hook_command
+    for h in hooks
+)
+
+if not already_registered:
+    hooks.append({
+        "event": "Stop",
+        "command": hook_command,
+        "timeout": 600,
+    })
+    config_path.write_text(toml.dumps(data), encoding="utf-8")
+"@
+
+    python3 -c $pythonScript $kimiConfig $wrapper
+    Log "Added Kimi Stop hook config: $kimiConfig"
+}
+
 function Cleanup-LegacySuperpowersNamespace {
     $legacyPath = Join-Path (Join-Path $SourceDir "skills") "superpowers"
     if (Test-Path -LiteralPath $legacyPath) {
@@ -432,9 +615,21 @@ function Ensure-CuratedSuperpowersSkills {
 function Ensure-CodexSkillLinks {
     $codexSkillsDir = Join-Path $TargetHome ".codex\skills"
     Ensure-Dir $codexSkillsDir
+    Remove-DeprecatedCodexSkills -CodexSkillsDir $codexSkillsDir
 
     Get-ChildItem -LiteralPath (Join-Path $SourceDir "skills") -Force | ForEach-Object {
         Ensure-DirectoryLink -Source $_.FullName -Target (Join-Path $codexSkillsDir $_.Name)
+    }
+}
+
+function Remove-DeprecatedCodexSkills {
+    param([string]$CodexSkillsDir)
+
+    foreach ($skill in $DeprecatedCodexSkills) {
+        $target = Join-Path $CodexSkillsDir $skill
+        if (Test-PathOrLink $target) {
+            Backup-Path $target
+        }
     }
 }
 
@@ -498,10 +693,12 @@ if ($HumanizeSync -ne "0") {
     Log "Humanize branch: $HumanizeBranch"
 }
 Log "Backup directory: $BackupRoot"
+Log "Kimi Code home: $KimiCodeHome"
 
 Ensure-SuperpowersRepo
 Ensure-HumanizeRepo
 Repair-HumanizeCodexHookProbe
+Repair-HumanizeCodexHooksFeatureName
 Ensure-CuratedSuperpowersSkills
 
 Ensure-FileSymlink -Source (Join-Path $SourceDir "CLAUDE.md") -Target (Join-Path $TargetHome ".claude\CLAUDE.md")
@@ -518,7 +715,12 @@ Ensure-FileSymlink -Source (Join-Path $SourceDir "AGENTS.md") -Target (Join-Path
 Ensure-FileSymlink -Source (Join-Path $SourceDir "AGENTS.md") -Target (Join-Path $TargetHome ".codex\AGENTS.md")
 Ensure-CodexConfigFile
 Ensure-DirectoryLink -Source (Join-Path $SourceDir ".codex\agents") -Target (Join-Path $TargetHome ".codex\agents")
+Install-HumanizeRlcr
 Ensure-CodexSkillLinks
-Install-HumanizeCodexRlcr
+
+Ensure-FileSymlink -Source (Join-Path $SourceDir "AGENTS.md") -Target (Join-Path $KimiCodeHome "AGENTS.md")
+Ensure-DirectoryLink -Source (Join-Path $SourceDir "skills") -Target (Join-Path $KimiCodeHome "skills")
+Install-KimiStopHookWrapper
+Ensure-KimiStopHookConfig
 
 Log "Sync complete."

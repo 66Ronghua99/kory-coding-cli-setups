@@ -17,6 +17,5 @@ Harness and Superpowers have different jobs.
 
 - `harness:init`: bootstrap the repository baseline
 - `harness:doc-health`: define repository truth and pointer consistency standards
-- `harness:lint-test-design`: define lint/test invariants and rollout standards
 
 The agent should read Harness to know what "correct" means, then use Superpowers to perform the work.

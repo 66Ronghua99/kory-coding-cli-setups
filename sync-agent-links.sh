@@ -5,6 +5,7 @@ SOURCE_DIR="$(cd "$(dirname "$0")" && pwd)"
 SUPERPOWERS_DIR="${SUPERPOWERS_DIR:-$SOURCE_DIR/superpowers}"
 SUPERPOWERS_REMOTE_URL="${SUPERPOWERS_REMOTE_URL:-https://github.com/obra/superpowers.git}"
 SUPERPOWERS_BRANCH="${SUPERPOWERS_BRANCH:-main}"
+KIMI_CODE_HOME="${KIMI_CODE_HOME:-$HOME/.kimi-code}"
 HUMANIZE_SYNC="${HUMANIZE_SYNC:-1}"
 HUMANIZE_DIR="${HUMANIZE_DIR:-$SOURCE_DIR/humanize}"
 HUMANIZE_REMOTE_URL="${HUMANIZE_REMOTE_URL:-https://github.com/PolyArch/humanize.git}"
@@ -19,6 +20,10 @@ CURATED_SUPERPOWERS_SKILLS=(
   executing-plans
   test-driven-development
   verification-before-completion
+)
+DEPRECATED_CODEX_SKILLS=(
+  harness-lint-test-design
+  harness-refactor
 )
 
 log() {
@@ -175,9 +180,47 @@ PY
   log "Patched Humanize codex_hooks feature probe: $hooks_installer"
 }
 
-install_humanize_codex_rlcr() {
+patch_humanize_codex_hooks_feature_name() {
   [[ "$HUMANIZE_SYNC" != "0" ]] || return 0
-  run_cmd "$HUMANIZE_DIR/scripts/install-skill.sh" --target codex
+  local hooks_installer="$HUMANIZE_DIR/scripts/install-codex-hooks.sh"
+  [[ -f "$hooks_installer" ]] || return 0
+
+  local feature_name=""
+  if command -v codex >/dev/null 2>&1; then
+    if codex features list 2>/dev/null | awk '$1 == "hooks" { found = 1 } END { exit(found ? 0 : 1) }'; then
+      feature_name="hooks"
+    elif codex features list 2>/dev/null | awk '$1 == "codex_hooks" { found = 1 } END { exit(found ? 0 : 1) }'; then
+      feature_name="codex_hooks"
+    fi
+  fi
+
+  [[ -n "$feature_name" ]] || return 0
+
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    log "[dry-run] patch Humanize codex_hooks feature name to $feature_name in $hooks_installer"
+    return 0
+  fi
+
+  command -v python3 >/dev/null 2>&1 || die "python3 is required to patch Humanize codex_hooks feature name"
+  python3 - "$hooks_installer" "$feature_name" <<'PY'
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+feature_name = sys.argv[2]
+text = path.read_text(encoding="utf-8")
+if "codex_hooks" in text:
+    path.write_text(text.replace("codex_hooks", feature_name), encoding="utf-8")
+PY
+  log "Patched Humanize codex_hooks feature name to $feature_name: $hooks_installer"
+}
+
+install_humanize_rlcr() {
+  [[ "$HUMANIZE_SYNC" != "0" ]] || return 0
+  run_cmd "$HUMANIZE_DIR/scripts/install-skill.sh" \
+    --target both \
+    --kimi-skills-dir "${SOURCE_DIR}/skills" \
+    --codex-skills-dir "${SOURCE_DIR}/skills"
   sanitize_codex_hooks_config
 }
 
@@ -205,6 +248,125 @@ if isinstance(data, dict) and "description" in data:
 PY
 }
 
+install_kimi_stop_hook_wrapper() {
+  [[ "$HUMANIZE_SYNC" != "0" ]] || return 0
+  local hooks_dir="${SOURCE_DIR}/skills/humanize/hooks"
+  local wrapper="$hooks_dir/loop-kimi-stop-hook.sh"
+
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    log "[dry-run] install Kimi Stop hook wrapper: $wrapper"
+    return 0
+  fi
+
+  ensure_dir "$hooks_dir"
+
+  cat > "$wrapper" <<'EOF'
+#!/usr/bin/env bash
+#
+# Kimi native Stop hook adapter for Humanize RLCR.
+#
+# Kimi passes the hook event as JSON via stdin and expects:
+#   exit 0  -> allow the stop
+#   exit 2  -> block the stop (stderr is shown as the reason)
+#
+# Humanize's loop-codex-stop-hook.sh speaks the Claude Code hook protocol:
+#   stdout contains JSON {"decision": "block", "reason": "..."} and exits 0.
+# This wrapper converts between the two protocols.
+#
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+CODEX_STOP_HOOK="$SCRIPT_DIR/loop-codex-stop-hook.sh"
+
+TMP_OUTPUT="$(mktemp)"
+trap 'rm -f "$TMP_OUTPUT"' EXIT
+
+# The Codex/Claude hook reads stdin itself (it expects Claude-style hook JSON).
+# It writes its decision JSON to stdout; we capture stdout while letting stderr
+# flow through to Kimi so progress/review output is visible.
+if ! "$CODEX_STOP_HOOK" >"$TMP_OUTPUT"; then
+  echo "Humanize stop hook failed with exit code $?. Blocking exit." >&2
+  exit 2
+fi
+
+# Parse the Claude-style decision from stdout.
+DECISION=""
+REASON=""
+if command -v jq >/dev/null 2>&1; then
+  DECISION="$(jq -r '.decision // empty' "$TMP_OUTPUT" 2>/dev/null || echo "")"
+  REASON="$(jq -r '.reason // "Blocked by Humanize RLCR stop hook."' "$TMP_OUTPUT" 2>/dev/null || echo "Blocked by Humanize RLCR stop hook.")"
+else
+  # Minimal fallback if jq is missing: grep for the decision field.
+  DECISION="$(grep -o '"decision"[[:space:]]*:[[:space:]]*"[^"]*"' "$TMP_OUTPUT" 2>/dev/null | head -1 | sed 's/.*"\([^"]*\)"$/\1/' || echo "")"
+  REASON="Blocked by Humanize RLCR stop hook."
+fi
+
+if [[ "$DECISION" == "block" ]]; then
+  echo "$REASON" >&2
+  exit 2
+fi
+
+exit 0
+EOF
+
+  chmod +x "$wrapper"
+  log "Installed Kimi Stop hook wrapper: $wrapper"
+}
+
+ensure_kimi_stop_hook_config() {
+  [[ "$HUMANIZE_SYNC" != "0" ]] || return 0
+  local kimi_config="${KIMI_CODE_HOME}/config.toml"
+  local wrapper="${SOURCE_DIR}/skills/humanize/hooks/loop-kimi-stop-hook.sh"
+
+  ensure_dir "$(dirname "$kimi_config")"
+
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    log "[dry-run] ensure Kimi Stop hook config in $kimi_config"
+    return 0
+  fi
+
+  if [[ -f "$kimi_config" ]] && grep -Fq "$wrapper" "$kimi_config"; then
+    log "OK Kimi Stop hook config: $kimi_config"
+    return 0
+  fi
+
+  command -v python3 >/dev/null 2>&1 || die "python3 is required to update Kimi config"
+  python3 - "$kimi_config" "$wrapper" <<'PY'
+import pathlib
+import sys
+
+try:
+    import tomllib
+except ImportError:
+    import tomli as tomllib
+import toml
+
+config_path = pathlib.Path(sys.argv[1])
+hook_command = sys.argv[2]
+
+data = {}
+if config_path.exists():
+    data = tomllib.loads(config_path.read_text(encoding="utf-8"))
+
+hooks = data.setdefault("hooks", [])
+
+already_registered = any(
+    isinstance(h, dict) and h.get("event") == "Stop" and h.get("command") == hook_command
+    for h in hooks
+)
+
+if not already_registered:
+    hooks.append({
+        "event": "Stop",
+        "command": hook_command,
+        "timeout": 600,
+    })
+    config_path.write_text(toml.dumps(data), encoding="utf-8")
+PY
+  log "Added Kimi Stop hook config: $kimi_config"
+}
+
 cleanup_legacy_superpowers_namespace() {
   local legacy_path="$SOURCE_DIR/skills/superpowers"
   if [[ -e "$legacy_path" || -L "$legacy_path" ]]; then
@@ -227,6 +389,7 @@ ensure_curated_superpowers_skills() {
 ensure_codex_skills_links() {
   local codex_skills_dir="${HOME}/.codex/skills"
   ensure_dir "$codex_skills_dir"
+  cleanup_deprecated_codex_skills "$codex_skills_dir"
 
   local path
   for path in "$SOURCE_DIR/skills"/*; do
@@ -234,6 +397,17 @@ ensure_codex_skills_links() {
     local name
     name="$(basename "$path")"
     ensure_symlink "$path" "$codex_skills_dir/$name"
+  done
+}
+
+cleanup_deprecated_codex_skills() {
+  local codex_skills_dir="$1"
+  local skill
+  for skill in "${DEPRECATED_CODEX_SKILLS[@]}"; do
+    local target="$codex_skills_dir/$skill"
+    if [[ -e "$target" || -L "$target" ]]; then
+      backup_path "$target"
+    fi
   done
 }
 
@@ -291,10 +465,12 @@ main() {
     log "Humanize branch: $HUMANIZE_BRANCH"
   fi
   log "Backup directory: $BACKUP_ROOT"
+  log "Kimi Code home: $KIMI_CODE_HOME"
 
   ensure_superpowers_repo
   ensure_humanize_repo
   patch_humanize_codex_hook_probe
+  patch_humanize_codex_hooks_feature_name
   ensure_curated_superpowers_skills
 
   # Claude Code
@@ -316,8 +492,14 @@ main() {
   ensure_symlink "$SOURCE_DIR/AGENTS.md" "${HOME}/.codex/AGENTS.md"
   ensure_codex_config_file
   ensure_symlink "$SOURCE_DIR/.codex/agents" "${HOME}/.codex/agents"
+  install_humanize_rlcr
   ensure_codex_skills_links
-  install_humanize_codex_rlcr
+
+  # Kimi
+  ensure_symlink "$SOURCE_DIR/AGENTS.md" "${KIMI_CODE_HOME}/AGENTS.md"
+  ensure_symlink "$SOURCE_DIR/skills" "${KIMI_CODE_HOME}/skills"
+  install_kimi_stop_hook_wrapper
+  ensure_kimi_stop_hook_config
 
   log "Sync complete."
 }

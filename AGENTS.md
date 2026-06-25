@@ -1,9 +1,9 @@
 # User-Level Collaboration AGENTS
 
 ## 0. North Star
-以下指南适用于所有**代码工程项目**。这个 user-level 文件的职责不是重复 Superpowers 的全部细节，而是把项目协作收敛到少量必要文档，并强制以 spec、plan、checklist 和新鲜验证证据作为执行真相。
+以下指南适用于所有**代码工程项目**。这个 user-level 文件的职责不是重复 Superpowers 或 Humanize 的全部细节，而是把项目协作收敛到少量必要文档，并强制以 spec、plan、checklist、Humanize 执行证据和新鲜验证证据作为执行真相。
 
-> 核心原则：**Superpowers First + 轻量文档骨架 + 证据先于结论**
+> 核心原则：**Superman 路由 + Superpowers 设计计划 + Humanize 执行 + 轻量文档骨架 + 证据先于结论**
 
 > !!非代码项目请忽略以下所有要求!!
 
@@ -27,22 +27,21 @@ PROGRESS.md
 - `PROGRESS.md` 不是强制每次阅读文件；它是 agent 执行小结的累计记录，按需查看。
 - 如果用户不确定当前或之前做到哪一步，优先通过 `NEXT_STEP.md`、spec/plan 时间顺序、checklist 完成情况，以及必要的代码审查来恢复状态，而不是依赖流水日志。
 
-### 1.2 Superpowers Skill Set 为默认执行入口
-- 每次代码工程对话默认先进入 `using-superpowers`。
-- 只要存在匹配 skill，就必须走该 skill，不允许用临时流程替代。
-- `Superpowers` 负责流程执行，`Harness` 负责轻量初始化、仓库文档真相、lint/test invariant 与 architecture drift 治理。
+### 1.2 Superman 为默认宏观入口
+- 每次非平凡代码工程任务默认先进入 `superman`。
+- `superman` 的职责类似 user-level 的 `using-superpowers`：先读取必要上下文，再判断走轻量实现、Superpowers 设计计划、Humanize 执行，或仓库文档治理。
+- `using-superpowers` 仍负责底层 skill discipline；只要存在匹配 skill，就必须走该 skill，不允许用临时流程替代。
+- `Superpowers` 负责 brainstorm/spec/plan，`Humanize` 负责大 feature 的 RLCR 执行与 review gate，`Harness` 只保留初始化和文档健康治理。
 - 常用路由如下：
   - 项目初始化或仓库 bootstrap：`harness:init`
+  - 大 feature、复杂行为变化、跨模块工作流：`superman`
   - 新功能、行为变化、工作流变化：`brainstorming`
   - Bug、回归、测试失败、异常行为：`systematic-debugging`
   - 已批准 spec 或已冻结需求进入实施拆解：`writing-plans`
-  - 开始实施且需要隔离工作区：`using-git-worktrees`
-  - 在支持 subagent 的环境执行计划：`subagent-driven-development`
-  - 不走 subagent 模式但已有书面计划：`executing-plans`
-  - 任意 feature / bugfix 代码实现：`test-driven-development`
+  - 已批准 plan 的大 feature 执行：`humanize-rlcr`
+  - 小型、边界清楚、低风险任务：读取局部上下文后直接实现并验证
+  - 任意 feature / bugfix 代码实现：优先保持测试先行；按任务风险决定是否需要完整 TDD 仪式
   - 仓库真相、指针漂移、spec/plan/evidence 脱节：`harness:doc-health`
-  - lint/test invariant、结构硬约束、可机械化复发问题：`harness:lint-test-design`
-  - 架构漂移、边界坍塌、主动式重构治理：`harness:refactor`
   - 任务边界或交付前审查：`requesting-code-review`
   - 任何“完成 / 修复 / 通过”声明前：`verification-before-completion`
   - 分支或工作区收尾：`finishing-a-development-branch`
@@ -75,12 +74,12 @@ PROGRESS.md
 - 不要给 `utils/`、`types/`、`hooks/`、纯常量目录批量铺设 `AGENTS.md`
 - 层级不清晰时，优先使用 `agents-hierarchy-sync`
 
-## 2. Standard Superpowers Workflow
+## 2. Standard Superman Workflow
 1. Route
 - 默认读取 `NEXT_STEP.md -> MEMORY.md`
 - 若当前状态不清晰，再看 `PROGRESS.md` 与 active spec / plan / checklist
-- 加载 `using-superpowers`
-- 由当前任务类型和 active 文档状态决定 skill 路由
+- 加载 `superman`
+- 由 `superman` 按任务规模、风险和 active 文档状态决定轻量路径、Superpowers 路径、Humanize 路径或 doc-health 路径
 
 2. Freeze Scope
 - 新功能、行为变化、流程变化先走 `brainstorming`
@@ -92,9 +91,9 @@ PROGRESS.md
 - 一次只保持一个主闭环处于 Active
 
 4. Execute
-- 实施开始前按需使用 `using-git-worktrees`
-- 优先 `subagent-driven-development`，否则使用 `executing-plans`
-- 任意 feature / bugfix 代码都遵守 `test-driven-development`
+- 大 feature 或复杂计划默认使用 `humanize-rlcr`
+- Humanize 生成的 round prompt、summary、review result、goal tracker 是执行层事实
+- 小型低风险任务可直接实现，但仍必须保留足够的测试或 smoke 证据
 
 5. Review And Verify
 - 在任务边界或交付前使用 `requesting-code-review`
@@ -103,7 +102,7 @@ PROGRESS.md
 
 6. Finish And Sync Back
 - 使用 `finishing-a-development-branch` 完成分支/工作区收尾
-- 回写 `PROGRESS.md`、`MEMORY.md`、`NEXT_STEP.md`、plan checklist 与证据路径
+- 回写 `PROGRESS.md`、`MEMORY.md`、`NEXT_STEP.md`、plan checklist、Humanize 证据路径与验证证据路径
 - `NEXT_STEP.md` 永远只保留一个直接指针；如果当前任务已完成且没有新任务，就清空它
 - goal 结束后默认补一次文件状态审查，确保 `PROGRESS.md`、`MEMORY.md`、`NEXT_STEP.md` 与 active spec / plan / checklist 一致
 
@@ -136,7 +135,7 @@ PROGRESS.md
 ## 6. Definition of Done
 只有以下条件同时满足才算 Done：
 - 当前 scope / plan step 已完成
-- 应走的 superpowers skill path 已实际执行
+- 应走的 `superman` / Superpowers / Humanize skill path 已实际执行
 - 有新鲜的验证证据
 - 审查意见已修复，或明确记录延期理由
 - `PROGRESS.md`、`MEMORY.md`、`NEXT_STEP.md` 与 checklist 已同步
@@ -156,7 +155,7 @@ PROGRESS.md
 - 读取 MEMORY.md
 - 如状态不清晰，再读取 PROGRESS.md
 - 查看当前 active spec / plan / checklist
-- 加载 using-superpowers
+- 加载 superman
 - 按路由进入对应 process skill
 ```
 

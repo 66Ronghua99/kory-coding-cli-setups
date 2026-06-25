@@ -10,21 +10,16 @@
 
 ## Core Paths
 
-- `docs/project/`: project context
-- `docs/architecture/`: architecture map and rules
-- `docs/testing/`: testing strategy and invariant notes
+- `docs/project/`: project-level context
 - `docs/superpowers/templates/`: required document templates
-- `artifacts/`: evidence and validation outputs
 
 ## Rules
 
 - Prefer repository-local documents over chat-only context.
 - Use the matching Superpowers skill before implementation.
 - `Superpowers` drives workflow execution; `Harness` defines lightweight governance standards.
-- `Harness` enters the workflow when bootstrap, repository truth, invariant design, or architecture-drift questions appear; otherwise it stays as a constraint source behind the active Superpowers stage.
+- `Harness` enters the workflow for bootstrap and repository-truth questions; otherwise it stays as a constraint source behind the active Superpowers stage.
 - Use `harness:doc-health` for repository truth, pointer drift, or stale spec/plan/evidence links.
-- Use `harness:lint-test-design` for lint/test invariant design and hardgate policy.
-- Use `harness:refactor` for architecture-drift findings and bounded refactor governance.
 - Create specs from `docs/superpowers/templates/SPEC_TEMPLATE.md`.
 - Create plans from `docs/superpowers/templates/PLAN_TEMPLATE.md`.
 - Keep `NEXT_STEP.md` to one direct pointer, or clear it when no next task exists.

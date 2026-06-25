@@ -15,5 +15,5 @@ M0: Establish repository context, first approved spec, and first invariant basel
 ## Pending
 
 - Write first implementation plan
-- Declare repository lint/test invariants in docs
+- Declare repository verification commands when the first plan needs them
 - Capture first validation evidence

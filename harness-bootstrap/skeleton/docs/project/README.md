@@ -17,6 +17,4 @@
 
 ## Related Docs
 
-- `docs/architecture/overview.md`
-- `docs/testing/strategy.md`
 - `docs/superpowers/templates/SPEC_TEMPLATE.md`

@@ -10,6 +10,10 @@ CURATED_SKILLS=(
   test-driven-development
   verification-before-completion
 )
+DEPRECATED_CODEX_SKILLS=(
+  harness-lint-test-design
+  harness-refactor
+)
 
 fail() {
   printf 'FAIL: %s\n' "$*" >&2
@@ -121,6 +125,19 @@ if grep -Fq "grep -qE '^codex_hooks" "$script_dir/install-codex-hooks.sh"; then
   printf 'unpatched codex_hooks probe\n' >&2
   exit 1
 fi
+
+target="kimi"
+kimi_skills_dir="${HOME}/.config/agents/skills"
+codex_skills_dir="${HOME}/.codex/skills"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --target) target="$2"; shift 2 ;;
+    --kimi-skills-dir) kimi_skills_dir="$2"; shift 2 ;;
+    --codex-skills-dir) codex_skills_dir="$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+
 mkdir -p "$HOME/.codex"
 cat > "$HOME/.codex/hooks.json" <<'JSON'
 {
@@ -139,7 +156,18 @@ cat > "$HOME/.codex/hooks.json" <<'JSON'
   "description": "Humanize Codex Hooks"
 }
 JSON
-printf 'install-skill %s HOME=%s\n' "$*" "${HOME:-}" >> "${HUMANIZE_INSTALL_LOG:?}"
+
+if [[ "$target" == "kimi" || "$target" == "both" ]]; then
+  mkdir -p "$kimi_skills_dir/humanize/hooks"
+  printf 'kimi humanize hook\n' > "$kimi_skills_dir/humanize/hooks/loop-kimi-stop-hook.sh"
+  printf 'kimi humanize skill\n' > "$kimi_skills_dir/humanize/SKILL.md"
+fi
+if [[ "$target" == "codex" || "$target" == "both" ]]; then
+  mkdir -p "$codex_skills_dir/humanize/hooks"
+  printf 'codex humanize hook\n' > "$codex_skills_dir/humanize/hooks/loop-codex-stop-hook.sh"
+fi
+
+printf 'install-skill --target %s HOME=%s\n' "$target" "${HOME:-}" >> "${HUMANIZE_INSTALL_LOG:?}"
 EOF
     chmod +x scripts/install-skill.sh scripts/install-codex-hooks.sh
     printf 'humanize %s\n' "$version" > VERSION
@@ -283,6 +311,8 @@ test_sync_clones_and_exports_curated_skills() {
   assert_skill_version "$home_dir/.codex/skills/using-superpowers/SKILL.md" "v1"
   assert_not_exists "$home_dir/.codex/skills/skills"
   assert_exists "$home_dir/.codex/skills/sample-skill/SKILL.md"
+  assert_symlink_target "$home_dir/.kimi-code/AGENTS.md" "$source/AGENTS.md"
+  assert_symlink_target "$home_dir/.kimi-code/skills" "$source/skills"
 }
 
 test_sync_pulls_latest_superpowers_content() {
@@ -442,6 +472,30 @@ test_legacy_namespace_is_replaced() {
   assert_curated_skill_links "$source"
 }
 
+test_deprecated_codex_skill_links_are_removed() {
+  local tempdir
+  tempdir="$(mktemp -d)"
+  local source="$tempdir/source"
+  local home_dir="$tempdir/home"
+  local remote_root="$tempdir/remote"
+  local remote_url="$remote_root/superpowers-remote.git"
+  make_fake_source "$source"
+  make_superpowers_remote "$remote_root" "v1"
+  make_humanize_remote "$remote_root" "v1"
+  mkdir -p "$home_dir/.codex/skills"
+
+  local skill
+  for skill in "${DEPRECATED_CODEX_SKILLS[@]}"; do
+    ln -s "$source/skills/$skill" "$home_dir/.codex/skills/$skill"
+  done
+
+  run_sync "$source" "$home_dir" "$remote_url" "main"
+
+  for skill in "${DEPRECATED_CODEX_SKILLS[@]}"; do
+    assert_not_exists "$home_dir/.codex/skills/$skill"
+  done
+}
+
 test_invalid_remote_fails_cleanly() {
   local tempdir
   tempdir="$(mktemp -d)"
@@ -465,7 +519,7 @@ test_humanize_checkout_is_gitignored() {
   assert_file_contains "$REPO_ROOT/.gitignore" "humanize"
 }
 
-test_sync_installs_humanize_rlcr_for_codex() {
+test_sync_installs_humanize_rlcr_for_kimi_and_codex() {
   local tempdir
   tempdir="$(mktemp -d)"
   local source="$tempdir/source"
@@ -482,10 +536,19 @@ test_sync_installs_humanize_rlcr_for_codex() {
 
   assert_exists "$source/humanize/.git"
   assert_file_contains "$source/humanize/VERSION" "humanize v1"
-  assert_file_contains "$install_log" "install-skill --target codex"
+  assert_file_contains "$install_log" "install-skill --target both"
   assert_file_contains "$install_log" "HOME=$home_dir"
   assert_file_contains "$home_dir/.codex/hooks.json" '"hooks"'
   assert_file_not_contains "$home_dir/.codex/hooks.json" '"description"'
+  assert_exists "$source/skills/humanize/SKILL.md"
+  assert_exists "$source/skills/humanize/hooks/loop-kimi-stop-hook.sh"
+  assert_symlink_target "$home_dir/.kimi-code/skills" "$source/skills"
+  assert_exists "$home_dir/.kimi-code/skills/humanize/SKILL.md"
+  assert_exists "$home_dir/.kimi-code/skills/humanize/hooks/loop-kimi-stop-hook.sh"
+  assert_exists "$home_dir/.codex/skills/humanize/SKILL.md"
+  assert_exists "$home_dir/.kimi-code/config.toml"
+  assert_file_contains "$home_dir/.kimi-code/config.toml" "event = \"Stop\""
+  assert_file_contains "$home_dir/.kimi-code/config.toml" "$source/skills/humanize/hooks/loop-kimi-stop-hook.sh"
 }
 
 test_sync_updates_humanize_checkout_on_rerun() {
@@ -506,7 +569,34 @@ test_sync_updates_humanize_checkout_on_rerun() {
   HUMANIZE_TEST_INSTALL_LOG="$install_log" run_sync "$source" "$home_dir" "$remote_url" "main"
 
   assert_file_contains "$source/humanize/VERSION" "humanize v2"
-  [[ "$(grep -c 'install-skill --target codex' "$install_log")" == "2" ]] || fail "Expected Humanize installer to run on each sync"
+  [[ "$(grep -c 'install-skill --target both' "$install_log")" == "2" ]] || fail "Expected Humanize installer to run on each sync"
+}
+
+test_kimi_code_home_override() {
+  local tempdir
+  tempdir="$(mktemp -d)"
+  local source="$tempdir/source"
+  local home_dir="$tempdir/home"
+  local kimi_home="$tempdir/kimi-home"
+  local remote_root="$tempdir/remote"
+  local remote_url="$remote_root/superpowers-remote.git"
+  make_fake_source "$source"
+  make_superpowers_remote "$remote_root" "v1"
+  make_humanize_remote "$remote_root" "v1"
+  mkdir -p "$home_dir"
+
+  HOME="$home_dir" KIMI_CODE_HOME="$kimi_home" \
+    SUPERPOWERS_REMOTE_URL="$remote_url" \
+    SUPERPOWERS_BRANCH="main" \
+    HUMANIZE_REMOTE_URL="${HUMANIZE_TEST_REMOTE_URL:-$remote_root/humanize-remote.git}" \
+    HUMANIZE_BRANCH="${HUMANIZE_TEST_BRANCH:-main}" \
+    HUMANIZE_SYNC="${HUMANIZE_TEST_SYNC:-1}" \
+    HUMANIZE_INSTALL_LOG="${HUMANIZE_TEST_INSTALL_LOG:-$home_dir/humanize-install.log}" \
+    bash "$source/sync-agent-links.sh"
+
+  assert_symlink_target "$kimi_home/AGENTS.md" "$source/AGENTS.md"
+  assert_symlink_target "$kimi_home/skills" "$source/skills"
+  assert_not_exists "$home_dir/.kimi-code"
 }
 
 test_humanize_sync_can_be_disabled() {
@@ -546,7 +636,7 @@ test_dry_run_allows_missing_humanize_checkout() {
 
   assert_not_exists "$source/humanize"
   assert_file_contains /tmp/test-sync-agent-links-dry-run.out "[dry-run] git clone --branch main --single-branch $remote_root/humanize-remote.git $source/humanize"
-  assert_file_contains /tmp/test-sync-agent-links-dry-run.out "[dry-run] $source/humanize/scripts/install-skill.sh --target codex"
+  assert_file_contains /tmp/test-sync-agent-links-dry-run.out "[dry-run] $source/humanize/scripts/install-skill.sh --target both --kimi-skills-dir $source/skills --codex-skills-dir $source/skills"
 }
 
 run_selected_tests() {
@@ -560,13 +650,15 @@ run_selected_tests() {
     test_codex_config_can_be_copied_with_explicit_flag
     test_existing_non_git_superpowers_path_fails
     test_legacy_namespace_is_replaced
+    test_deprecated_codex_skill_links_are_removed
     test_invalid_remote_fails_cleanly
-    test_sync_installs_humanize_rlcr_for_codex
+    test_sync_installs_humanize_rlcr_for_kimi_and_codex
     test_sync_updates_humanize_checkout_on_rerun
     test_humanize_sync_can_be_disabled
     test_dry_run_allows_missing_humanize_checkout
     test_powershell_script_exists
     test_humanize_checkout_is_gitignored
+    test_kimi_code_home_override
   )
 
   local test_name
