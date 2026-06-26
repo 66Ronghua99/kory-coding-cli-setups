@@ -515,8 +515,14 @@ test_powershell_script_exists() {
   assert_exists "$REPO_ROOT/sync-agent-links.ps1"
 }
 
-test_humanize_checkout_is_gitignored() {
-  assert_file_contains "$REPO_ROOT/.gitignore" "humanize"
+test_humanize_checkout_and_generated_skills_are_gitignored() {
+  assert_file_contains "$REPO_ROOT/.gitignore" "/humanize/"
+  assert_file_contains "$REPO_ROOT/.gitignore" "/skills/humanize*"
+
+  local skill
+  for skill in humanize humanize-gen-plan humanize-refine-plan humanize-rlcr; do
+    git -C "$REPO_ROOT" check-ignore -q "skills/$skill" || fail "Expected skills/$skill to be gitignored"
+  done
 }
 
 test_sync_installs_humanize_rlcr_for_kimi_and_codex() {
@@ -657,7 +663,7 @@ run_selected_tests() {
     test_humanize_sync_can_be_disabled
     test_dry_run_allows_missing_humanize_checkout
     test_powershell_script_exists
-    test_humanize_checkout_is_gitignored
+    test_humanize_checkout_and_generated_skills_are_gitignored
     test_kimi_code_home_override
   )
 

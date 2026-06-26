@@ -1,11 +1,18 @@
 # Harness local verification artifacts
 superpowers/artifacts/refactor-gate/
-humanize
-skills/using-superpowers
-skills/brainstorming
-skills/writing-plans
-skills/executing-plans
-skills/test-driven-development
-skills/verification-before-completion
 node_modules
+
+# Managed upstream checkouts (synced by sync-agent-links)
+/humanize/
 superpowers/
+
+# Curated Superpowers skill links (synced by sync-agent-links)
+/skills/using-superpowers
+/skills/brainstorming
+/skills/writing-plans
+/skills/executing-plans
+/skills/test-driven-development
+/skills/verification-before-completion
+
+# Generated Humanize skills and runtime bundle (synced by sync-agent-links via humanize/scripts/install-skill.sh)
+/skills/humanize*
