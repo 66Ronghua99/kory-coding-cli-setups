@@ -17,11 +17,13 @@ This pack keeps repository bootstrap consistent across greenfield and migration 
 1. Detect project mode.
 2. Apply `greenfield` or `migration`.
 3. Create collaboration docs, project-level docs, and Superpowers templates.
-4. Leave `NEXT_STEP.md` pointing at spec/planning through Superpowers.
+4. Update the target project's `.gitignore` so generated Harness docs stay local by default.
+5. Leave `NEXT_STEP.md` pointing at spec/planning through Superpowers.
 
 ## Notes
 
 - The current model is `harness-governance-only.v1`.
 - Template usage is enforced at the repository level, not by chat memory.
 - Runtime source resolution defaults to `$HARNESS_CLI_HOME`, then `$CODEX_HOME`, then `$HOME/.coding-cli`.
-- Bootstrap intentionally avoids local hooks, preset manifests, gitignore files, and stack-specific generated docs beyond the minimal `docs/project/README.md`.
+- Bootstrap intentionally avoids local hooks, preset manifests, broad gitignore examples, and stack-specific generated docs beyond the minimal `docs/project/README.md`.
+- Bootstrap only adds target-project `.gitignore` entries for `docs/superpowers/`, project-root `*.md`, and the `AGENTS.md` exception.

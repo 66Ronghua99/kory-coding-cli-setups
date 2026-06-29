@@ -5,6 +5,7 @@ TARGET_DIR="${1:-$(pwd)}"
 PACK_ROOT="${2:-$(cd "$(dirname "$0")/.." && pwd)}"
 SKELETON_DIR="$PACK_ROOT/skeleton"
 MODE_SCRIPT="$PACK_ROOT/scripts/detect_project_mode.sh"
+GITIGNORE_SCRIPT="$PACK_ROOT/scripts/ensure_harness_gitignore.sh"
 
 if [[ ! -d "$TARGET_DIR" ]]; then
   echo "Target directory does not exist: $TARGET_DIR" >&2
@@ -18,5 +19,6 @@ if [[ "$MODE" != "greenfield" ]]; then
 fi
 
 cp -R "$SKELETON_DIR"/. "$TARGET_DIR"/
+bash "$GITIGNORE_SCRIPT" "$TARGET_DIR"
 
 echo "greenfield-bootstrap-complete"

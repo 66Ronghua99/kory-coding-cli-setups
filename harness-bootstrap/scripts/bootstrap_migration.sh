@@ -4,6 +4,7 @@ set -euo pipefail
 TARGET_DIR="${1:-$(pwd)}"
 PACK_ROOT="${2:-$(cd "$(dirname "$0")/.." && pwd)}"
 SKELETON_DIR="$PACK_ROOT/skeleton"
+GITIGNORE_SCRIPT="$PACK_ROOT/scripts/ensure_harness_gitignore.sh"
 
 if [[ ! -d "$TARGET_DIR" ]]; then
   echo "Target directory does not exist: $TARGET_DIR" >&2
@@ -28,5 +29,7 @@ while IFS= read -r -d '' path; do
     cp "$path" "$dest_path"
   fi
 done < <(find "$SKELETON_DIR" \( -type d -o -type f \) -print0)
+
+bash "$GITIGNORE_SCRIPT" "$TARGET_DIR"
 
 echo "migration-bootstrap-complete"
