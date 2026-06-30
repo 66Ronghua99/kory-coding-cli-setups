@@ -31,7 +31,7 @@ After bootstrap, the repository should have:
 - root collaboration docs: `AGENTS.md`, `PROGRESS.md`, `MEMORY.md`, `NEXT_STEP.md`
 - project-level docs under `docs/project/`
 - Superpowers templates under `docs/superpowers/templates/`
-- target project `.gitignore` entries that ignore `docs/superpowers/` and project-root `*.md`, while keeping `AGENTS.md` trackable
+- target project `.gitignore` entries that ignore `docs/superpowers/`, `artifacts/`, and project-root `*.md`, while keeping `AGENTS.md` and root `README.md` trackable
 
 Bootstrap standardizes the collaboration entrypoint. It does not claim that the repository already has runnable doc-health, lint, or test gates.
 
@@ -85,7 +85,7 @@ The lightweight baseline assumes:
 - Do not overwrite product code during migration.
 - Do not vendor non-init Harness skills into any repository-local runtime directory.
 - Do not add local hooks, pre-commit files, preset manifests, broad gitignore examples, or stack-specific context docs beyond the minimal `docs/project/README.md` during bootstrap.
-- Only update the target project `.gitignore` for the Harness-generated docs contract: ignore `docs/superpowers/` and project-root `*.md`, then unignore project-level `AGENTS.md`.
+- Only update the target project `.gitignore` for the Harness-generated docs/evidence contract: ignore `docs/superpowers/`, `artifacts/`, and project-root `*.md`, then unignore project-level `AGENTS.md` and root `README.md`.
 - Do not stop at file creation only; leave a clear next action in `NEXT_STEP.md`.
 - Do not bake machine-specific absolute paths into scripts or generated project docs.
 - Do not reintroduce hidden manifest-based truth for user-level bootstrap.

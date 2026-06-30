@@ -27,8 +27,10 @@ done
 
 required_gitignore_entries=(
   "docs/superpowers/"
+  "artifacts/"
   "/*.md"
   "!/AGENTS.md"
+  "!/README.md"
 )
 
 gitignore_path="$TARGET_DIR/.gitignore"
@@ -51,8 +53,18 @@ if [[ -f "$gitignore_path" ]]; then
       missing=1
     fi
 
+    if ! git -C "$TARGET_DIR" check-ignore --no-index -q "artifacts/verification.log"; then
+      echo "gitignore-not-ignored: artifacts/verification.log" >&2
+      missing=1
+    fi
+
     if git -C "$TARGET_DIR" check-ignore --no-index -q "AGENTS.md"; then
       echo "gitignore-invalid: AGENTS.md must remain trackable" >&2
+      missing=1
+    fi
+
+    if git -C "$TARGET_DIR" check-ignore --no-index -q "README.md"; then
+      echo "gitignore-invalid: README.md must remain trackable" >&2
       missing=1
     fi
   fi

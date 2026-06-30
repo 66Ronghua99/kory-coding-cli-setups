@@ -37,15 +37,18 @@ assert_harness_gitignore_contract() {
   local target_dir="$1"
 
   assert_file_contains "$target_dir/.gitignore" "docs/superpowers/"
+  assert_file_contains "$target_dir/.gitignore" "artifacts/"
   assert_file_contains "$target_dir/.gitignore" "/*.md"
   assert_file_contains "$target_dir/.gitignore" "!/AGENTS.md"
+  assert_file_contains "$target_dir/.gitignore" "!/README.md"
 
   assert_ignored "$target_dir" "docs/superpowers/templates/SPEC_TEMPLATE.md"
+  assert_ignored "$target_dir" "artifacts/verification.log"
   assert_ignored "$target_dir" "PROGRESS.md"
   assert_ignored "$target_dir" "MEMORY.md"
   assert_ignored "$target_dir" "NEXT_STEP.md"
-  assert_ignored "$target_dir" "README.md"
   assert_not_ignored "$target_dir" "AGENTS.md"
+  assert_not_ignored "$target_dir" "README.md"
 }
 
 test_greenfield_bootstrap_adds_harness_gitignore_entries() {

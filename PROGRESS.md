@@ -88,3 +88,15 @@
 - Updated `tests/sync-agent-links/test-sync-agent-links.sh` to assert that both `/humanize/` and `/skills/humanize*` are gitignored, and to verify all four generated Humanize skill directories (`humanize`, `humanize-gen-plan`, `humanize-refine-plan`, `humanize-rlcr`) via `git check-ignore`.
 - Verified with `bash tests/sync-agent-links/test-sync-agent-links.sh` (PASS).
 - Updated `MEMORY.md` to state explicitly that `skills/humanize*` are generated artifacts recreated on every sync and must not be maintained by hand.
+
+## 2026-06-29
+
+- Updated the `harness:init` contract so the target project `.gitignore` keeps generated Harness docs and evidence local by ignoring `docs/superpowers/`, `artifacts/`, and project-root `*.md`, while explicitly allowing project-level `AGENTS.md` and root `README.md`.
+- Aligned repository memory and bootstrap skeleton memory with the new `.gitignore` contract.
+- Verified with `bash tests/harness-bootstrap/test-bootstrap-gitignore.sh`, `bash harness-bootstrap/scripts/validate_bootstrap.sh /Users/cory/.coding-cli`, and greenfield/migration bootstrap smoke runs followed by `validate_bootstrap.sh` in temporary target projects.
+
+## 2026-06-30
+
+- Added `skills/code-simplifier` as a Codex-native skill adapted from Anthropic's `code-simplifier` agent prompt. The skill focuses on simplifying recently modified code while preserving exact behavior and following repository conventions.
+- Linked `~/.codex/skills/code-simplifier` to `/Users/cory/.coding-cli/skills/code-simplifier` so Codex can discover it alongside the other shared user-level skills.
+- Verified with `/Users/cory/anaconda3/bin/python /Users/cory/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/cory/.coding-cli/skills/code-simplifier` (`Skill is valid!`). System and bundled Python both lack `PyYAML`, so the validator must use a Python environment with that dependency.

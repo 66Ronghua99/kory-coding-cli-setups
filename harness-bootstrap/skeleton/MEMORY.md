@@ -3,8 +3,9 @@
 ## Stable Notes
 
 - This repository was initialized from the local Harness bootstrap pack.
-- Required bootstrap files are `AGENTS.md`, `PROGRESS.md`, `MEMORY.md`, `NEXT_STEP.md`, plus `docs/superpowers/templates/`.
+- Required bootstrap files are `AGENTS.md`, `.gitignore`, `PROGRESS.md`, `MEMORY.md`, `NEXT_STEP.md`, plus `docs/superpowers/templates/`.
 - Template files under `docs/superpowers/templates/` define the required document shape.
+- `.gitignore` should keep generated Harness docs and evidence local by ignoring `docs/superpowers/`, `artifacts/`, and project-root `*.md`, while explicitly allowing project-level `AGENTS.md` and root `README.md`.
 - Harness skills define governance standards; Superpowers drives workflow execution.
 - `harness:doc-health` owns repository truth and pointer consistency.
 

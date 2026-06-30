@@ -26,4 +26,4 @@ This pack keeps repository bootstrap consistent across greenfield and migration 
 - Template usage is enforced at the repository level, not by chat memory.
 - Runtime source resolution defaults to `$HARNESS_CLI_HOME`, then `$CODEX_HOME`, then `$HOME/.coding-cli`.
 - Bootstrap intentionally avoids local hooks, preset manifests, broad gitignore examples, and stack-specific generated docs beyond the minimal `docs/project/README.md`.
-- Bootstrap only adds target-project `.gitignore` entries for `docs/superpowers/`, project-root `*.md`, and the `AGENTS.md` exception.
+- Bootstrap only adds target-project `.gitignore` entries for `docs/superpowers/`, `artifacts/`, project-root `*.md`, and the `AGENTS.md`/root `README.md` exceptions.

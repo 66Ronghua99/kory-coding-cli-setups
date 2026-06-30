@@ -3,8 +3,9 @@
 ## Stable Notes
 
 - This repository was initialized from the local Harness bootstrap pack.
-- User-level bootstrap is intentionally lightweight: required collaboration files are `AGENTS.md`, `PROGRESS.md`, `MEMORY.md`, `NEXT_STEP.md`, plus `docs/project/README.md` and `docs/superpowers/templates/`.
-- `harness:init` bootstrap must not create local hooks, `.gitignore`, preset/manifest TOML files, `.harness`, `artifacts`, or default `docs/architecture` and `docs/testing` trees.
+- User-level bootstrap is intentionally lightweight: required collaboration files are `AGENTS.md`, `.gitignore`, `PROGRESS.md`, `MEMORY.md`, `NEXT_STEP.md`, plus `docs/project/README.md` and `docs/superpowers/templates/`.
+- `harness:init` bootstrap must not create local hooks, preset/manifest TOML files, `.harness`, `artifacts`, or default `docs/architecture` and `docs/testing` trees.
+- `harness:init` updates the target project `.gitignore` to ignore `docs/superpowers/`, `artifacts/`, and project-root `*.md`, while explicitly allowing project-level `AGENTS.md` and root `README.md`; it ignores but does not create the `artifacts/` directory.
 - Template files under `docs/superpowers/templates/` define the required document shape.
 - `superman` is the user-level macro router for code work: it decides whether to take a lightweight path, use Superpowers for design/planning, use Humanize RLCR for execution, or run doc-health.
 - `harness:doc-health` owns repository truth and pointer consistency.
