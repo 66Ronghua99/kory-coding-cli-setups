@@ -18,7 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 3. **`NEXT_STEP.md` (目前优先级最高的任务)**
     - **作用**：由`whatnext` skill生成，存放此时此刻优先级最高的任务（最小执行单元）。
-— **行动**：当开始执行具体的代码任务之前，必须确保git存档该文件并按照文件的指引行动。在任务完成之后，该文件会被清空，任务执行进度被汇总到`Progress.md`。
+— **行动**：当开始执行具体的代码任务之前，必须读取该文件并按照文件的指引行动；该文件属于本地协作状态，不应 stage、commit 或 push。在任务完成之后，该文件会被清空，任务执行进度被汇总到`Progress.md`。
 ---
 
 ## 1. 核心原则

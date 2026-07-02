@@ -35,9 +35,11 @@ Use for small, well-bounded edits, local script work, doc cleanup, or low-risk f
 Use for large features, behavior changes, workflow changes, significant refactors, cross-module changes, or requests with meaningful ambiguity.
 
 1. Use `superpowers:brainstorming` to explore intent and freeze the design.
-2. Store the approved spec under the repository's declared spec path, normally `docs/superpowers/specs/`.
-3. Use `superpowers:writing-plans` to produce the implementation plan and checklist, normally under `docs/superpowers/plans/`.
+2. Store the approved spec locally under the repository's declared spec path, normally `docs/superpowers/specs/`; do not stage, commit, or push it.
+3. Use `superpowers:writing-plans` to produce the local implementation plan and checklist, normally under `docs/superpowers/plans/`; do not stage, commit, or push it.
 4. Keep only one main loop active in `NEXT_STEP.md`.
+
+`PROGRESS.md`, `MEMORY.md`, `NEXT_STEP.md`, `docs/superpowers/`, and `artifacts/` are local-only collaboration state. This policy overrides upstream Superpowers wording that asks for spec or plan commits.
 
 ### Humanize Execution Route
 

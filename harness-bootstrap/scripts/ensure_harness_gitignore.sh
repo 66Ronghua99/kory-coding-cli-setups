@@ -30,3 +30,13 @@ ensure_line "artifacts/"
 ensure_line "/*.md"
 ensure_line "!/AGENTS.md"
 ensure_line "!/README.md"
+
+if git -C "$TARGET_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  git -C "$TARGET_DIR" rm --cached -r --ignore-unmatch \
+    PROGRESS.md \
+    MEMORY.md \
+    NEXT_STEP.md \
+    docs/superpowers \
+    artifacts \
+    >/dev/null
+fi

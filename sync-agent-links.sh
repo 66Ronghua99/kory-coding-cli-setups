@@ -121,6 +121,9 @@ ensure_superpowers_repo() {
   elif [[ ! -e "$SUPERPOWERS_DIR/.git" ]]; then
     die "Existing superpowers path is not a git repository: $SUPERPOWERS_DIR"
   else
+    run_cmd git -C "$SUPERPOWERS_DIR" checkout -- \
+      skills/brainstorming/SKILL.md \
+      skills/writing-plans/SKILL.md
     run_cmd git -C "$SUPERPOWERS_DIR" checkout "$SUPERPOWERS_BRANCH"
     run_cmd git -C "$SUPERPOWERS_DIR" pull --ff-only origin "$SUPERPOWERS_BRANCH"
   fi
@@ -213,6 +216,55 @@ if "codex_hooks" in text:
     path.write_text(text.replace("codex_hooks", feature_name), encoding="utf-8")
 PY
   log "Patched Humanize codex_hooks feature name to $feature_name: $hooks_installer"
+}
+
+patch_superpowers_local_only_policy() {
+  local brainstorming_skill="$SUPERPOWERS_DIR/skills/brainstorming/SKILL.md"
+  local writing_plans_skill="$SUPERPOWERS_DIR/skills/writing-plans/SKILL.md"
+
+  if [[ ! -f "$brainstorming_skill" && ! -f "$writing_plans_skill" ]]; then
+    return 0
+  fi
+
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    log "[dry-run] patch Superpowers local-only docs policy in $SUPERPOWERS_DIR/skills"
+    return 0
+  fi
+
+  command -v python3 >/dev/null 2>&1 || die "python3 is required to patch Superpowers local-only docs policy"
+  python3 - "$brainstorming_skill" "$writing_plans_skill" <<'PY'
+import pathlib
+import re
+import sys
+
+brainstorming_path = pathlib.Path(sys.argv[1])
+writing_plans_path = pathlib.Path(sys.argv[2])
+
+if brainstorming_path.is_file():
+    text = brainstorming_path.read_text(encoding="utf-8")
+    text = text.replace(
+        "6. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit",
+        "6. **Write design doc** — save locally to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` without staging or committing it",
+    )
+    text = text.replace(
+        "- Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`",
+        "- Write the validated design (spec) locally to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`; do not stage or commit it",
+    )
+    text = text.replace("Spec written and committed to", "Spec written locally to")
+    brainstorming_path.write_text(text, encoding="utf-8")
+
+if writing_plans_path.is_file():
+    text = writing_plans_path.read_text(encoding="utf-8")
+    text = re.sub(
+        r"(\*\*Save plans to:\*\* `docs/superpowers/plans/YYYY-MM-DD-<feature-name>\.md`\n)"
+        r"(?!- Do not stage or commit `docs/superpowers/`)",
+        r"\1- Do not stage or commit `docs/superpowers/`, `PROGRESS.md`, `MEMORY.md`, `NEXT_STEP.md`, or `artifacts/`.\n",
+        text,
+    )
+    text = re.sub(r"(git add[^\n]*)\s+docs/superpowers/\S+", r"\1", text)
+    writing_plans_path.write_text(text, encoding="utf-8")
+PY
+  log "Patched Superpowers local-only docs policy: $SUPERPOWERS_DIR/skills"
 }
 
 install_humanize_rlcr() {
@@ -471,6 +523,7 @@ main() {
   ensure_humanize_repo
   patch_humanize_codex_hook_probe
   patch_humanize_codex_hooks_feature_name
+  patch_superpowers_local_only_policy
   ensure_curated_superpowers_skills
 
   # Claude Code

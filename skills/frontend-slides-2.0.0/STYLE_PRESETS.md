@@ -325,3 +325,22 @@ Curated visual styles for Frontend Slides. Each preset is inspired by real desig
 
 **Decorations:** Realistic illustrations, gratuitous glassmorphism, drop shadows without purpose
 
+---
+
+## CSS Gotchas
+
+### Negating CSS Functions
+
+**WRONG — silently ignored by browsers (no console error):**
+```css
+right: -clamp(28px, 3.5vw, 44px);   /* Browser ignores this */
+margin-left: -min(10vw, 100px);      /* Browser ignores this */
+```
+
+**CORRECT — wrap in `calc()`:**
+```css
+right: calc(-1 * clamp(28px, 3.5vw, 44px));  /* Works */
+margin-left: calc(-1 * min(10vw, 100px));     /* Works */
+```
+
+CSS does not allow a leading `-` before function names. The browser silently discards the entire declaration — no error, the element just appears in the wrong position. **Always use `calc(-1 * ...)` to negate CSS function values.**

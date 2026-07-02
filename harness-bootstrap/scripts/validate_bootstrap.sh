@@ -48,6 +48,26 @@ if [[ -f "$gitignore_path" ]]; then
       missing=1
     fi
 
+    if ! git -C "$TARGET_DIR" check-ignore --no-index -q "MEMORY.md"; then
+      echo "gitignore-not-ignored: MEMORY.md" >&2
+      missing=1
+    fi
+
+    if ! git -C "$TARGET_DIR" check-ignore --no-index -q "NEXT_STEP.md"; then
+      echo "gitignore-not-ignored: NEXT_STEP.md" >&2
+      missing=1
+    fi
+
+    if ! git -C "$TARGET_DIR" check-ignore --no-index -q "docs/superpowers/specs/example.md"; then
+      echo "gitignore-not-ignored: docs/superpowers/specs/example.md" >&2
+      missing=1
+    fi
+
+    if ! git -C "$TARGET_DIR" check-ignore --no-index -q "docs/superpowers/plans/example.md"; then
+      echo "gitignore-not-ignored: docs/superpowers/plans/example.md" >&2
+      missing=1
+    fi
+
     if ! git -C "$TARGET_DIR" check-ignore --no-index -q "docs/superpowers/templates/SPEC_TEMPLATE.md"; then
       echo "gitignore-not-ignored: docs/superpowers/templates/SPEC_TEMPLATE.md" >&2
       missing=1

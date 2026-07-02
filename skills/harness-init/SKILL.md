@@ -33,6 +33,8 @@ After bootstrap, the repository should have:
 - Superpowers templates under `docs/superpowers/templates/`
 - target project `.gitignore` entries that ignore `docs/superpowers/`, `artifacts/`, and project-root `*.md`, while keeping `AGENTS.md` and root `README.md` trackable
 
+`PROGRESS.md`, `MEMORY.md`, `NEXT_STEP.md`, `docs/superpowers/`, and `artifacts/` are local-only collaboration state. They must not be staged, committed, pushed, or required for GitHub handoff. If upstream Superpowers text says to commit a spec or plan, this local-only Harness policy overrides it.
+
 Bootstrap standardizes the collaboration entrypoint. It does not claim that the repository already has runnable doc-health, lint, or test gates.
 
 ## Mode Selection
@@ -86,6 +88,7 @@ The lightweight baseline assumes:
 - Do not vendor non-init Harness skills into any repository-local runtime directory.
 - Do not add local hooks, pre-commit files, preset manifests, broad gitignore examples, or stack-specific context docs beyond the minimal `docs/project/README.md` during bootstrap.
 - Only update the target project `.gitignore` for the Harness-generated docs/evidence contract: ignore `docs/superpowers/`, `artifacts/`, and project-root `*.md`, then unignore project-level `AGENTS.md` and root `README.md`.
+- If those local-only paths are already tracked during migration, remove them from the Git index without deleting working-tree files.
 - Do not stop at file creation only; leave a clear next action in `NEXT_STEP.md`.
 - Do not bake machine-specific absolute paths into scripts or generated project docs.
 - Do not reintroduce hidden manifest-based truth for user-level bootstrap.

@@ -86,6 +86,21 @@ version: $version
 ---
 EOF
     done
+    cat >> "skills/brainstorming/SKILL.md" <<'EOF'
+
+6. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
+
+> "Spec written and committed to `<path>`."
+EOF
+    cat >> "skills/writing-plans/SKILL.md" <<'EOF'
+
+**Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
+
+```bash
+git add tests/path/test.py src/path/file.py docs/superpowers/plans/example.md
+git commit -m "feat: add specific feature"
+```
+EOF
     printf 'fixture %s\n' "$version" > README.md
     git add README.md skills
     git commit -m "init $version" >/dev/null
@@ -313,6 +328,28 @@ test_sync_clones_and_exports_curated_skills() {
   assert_exists "$home_dir/.codex/skills/sample-skill/SKILL.md"
   assert_symlink_target "$home_dir/.kimi-code/AGENTS.md" "$source/AGENTS.md"
   assert_symlink_target "$home_dir/.kimi-code/skills" "$source/skills"
+}
+
+test_sync_patches_superpowers_local_only_policy() {
+  local tempdir
+  tempdir="$(mktemp -d)"
+  local source="$tempdir/source"
+  local home_dir="$tempdir/home"
+  local remote_root="$tempdir/remote"
+  local remote_url="$remote_root/superpowers-remote.git"
+  make_fake_source "$source"
+  make_superpowers_remote "$remote_root" "v1"
+  make_humanize_remote "$remote_root" "v1"
+  mkdir -p "$home_dir"
+
+  run_sync "$source" "$home_dir" "$remote_url" "main"
+
+  assert_file_not_contains "$source/skills/brainstorming/SKILL.md" "and commit"
+  assert_file_contains "$source/skills/brainstorming/SKILL.md" 'save locally to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` without staging or committing it'
+  assert_file_not_contains "$source/skills/brainstorming/SKILL.md" "Spec written and committed"
+  assert_file_contains "$source/skills/brainstorming/SKILL.md" 'Spec written locally to `<path>`'
+  assert_file_not_contains "$source/skills/writing-plans/SKILL.md" "docs/superpowers/plans/example.md"
+  assert_file_contains "$source/skills/writing-plans/SKILL.md" 'Do not stage or commit `docs/superpowers/`, `PROGRESS.md`, `MEMORY.md`, `NEXT_STEP.md`, or `artifacts/`.'
 }
 
 test_sync_pulls_latest_superpowers_content() {
@@ -648,6 +685,7 @@ test_dry_run_allows_missing_humanize_checkout() {
 run_selected_tests() {
   local tests=(
     test_sync_clones_and_exports_curated_skills
+    test_sync_patches_superpowers_local_only_policy
     test_sync_pulls_latest_superpowers_content
     test_conflicting_targets_are_backed_up
     test_rerun_is_idempotent_when_links_are_correct

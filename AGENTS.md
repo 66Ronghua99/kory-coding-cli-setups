@@ -67,6 +67,11 @@ PROGRESS.md
 
 一旦文档与实现脱节，先对齐文档，再继续推进。
 
+### 1.4.1 Local-Only Collaboration State
+- `PROGRESS.md`、`MEMORY.md`、`NEXT_STEP.md`、`docs/superpowers/`、`artifacts/` 是本地协作状态，默认不得 stage、commit、push 或要求进入 GitHub。
+- 如果 Superpowers 原始 skill 要求 commit spec/plan，本 user-level local-only 政策优先；spec/plan 只写入本地并在交付说明中引用路径。
+- `AGENTS.md`、根级 `README.md`、`.gitignore` 与普通产品代码/文档仍可按正常变更进入 Git。
+
 ### 1.5 AGENTS 采用稀疏层级，不做目录污染
 - user-level `AGENTS.md` 只负责全局协作政策
 - 项目根 `AGENTS.md` 负责该仓库的概览、入口、验证方式
