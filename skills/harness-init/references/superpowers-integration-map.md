@@ -1,21 +1,17 @@
 # Superpowers Integration Map
 
-Harness and Superpowers have different jobs.
+`harness:init` and the retained Superpowers skills have separate, narrow jobs.
 
-## Superpowers Owns Workflow
+## `harness:init`
 
-- `using-superpowers`
-- `brainstorming`
-- `writing-plans`
-- `executing-plans` or `subagent-driven-development`
-- `test-driven-development`
-- `requesting-code-review`
-- `verification-before-completion`
-- `finishing-a-development-branch`
+Creates only the minimal project collaboration documents and templates listed in the parent `SKILL.md`. It does not route ordinary coding work or install executable infrastructure.
 
-## Harness Owns Governance Standards
+## `brainstorming`
 
-- `harness:init`: bootstrap the repository baseline
-- `harness:doc-health`: define repository truth and pointer consistency standards
+Freezes requirements and design before a meaningful behavior or workflow change. Specs remain local under `docs/superpowers/specs/`.
 
-The agent should read Harness to know what "correct" means, then use Superpowers to perform the work.
+## `writing-plans`
+
+Turns an approved spec into an executable plan under `docs/superpowers/plans/`.
+
+No other skill is required by the bootstrap contract.

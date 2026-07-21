@@ -77,7 +77,7 @@ For each question:
 
 Example:
 
-> **Frozen Contracts:** The spec says the sync flow "installs Humanize", but does not name whether the repository or Humanize installer owns hook JSON changes. My recommendation: freeze that this repo invokes `humanize/scripts/install-skill.sh --target codex` and does not reimplement hook merging. Is that right?
+> **Frozen Contracts:** The spec says the sync flow "installs a runtime hook", but does not name whether the repository or the upstream installer owns hook configuration changes. My recommendation: freeze one owner and require that path to preserve unrelated hooks. Is that right?
 
 ### 4. Patch As Decisions Crystallize
 

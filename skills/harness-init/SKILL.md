@@ -1,104 +1,80 @@
 ---
 name: harness:init
-description: Users only proactively use this when entering a repository that needs the minimal collaboration baseline and Superpowers templates before design or implementation work begins.
+description: Initialize only the minimal project collaboration documents and Superpowers templates when the user explicitly asks to prepare a repository for agent work.
 ---
 
 # harness:init
 
-Bootstrap a repository into the lightweight Harness collaboration model.
+Initialize a repository's documentation baseline. This skill is an explicit setup action, not a mandatory precondition for ordinary coding tasks.
 
-`harness:init` is the only Harness skill that remains executable. Its job is infrastructure setup only: establish the minimum collaboration docs, project-level docs, Superpowers templates, and target-project `.gitignore` entries for generated Harness docs. It must not copy or vendor non-init Harness runtimes, local hooks, preset manifests, broad gitignore examples, or stack-specific generated docs into the target repository.
+## Entry
 
-## Entry Model
-
-`harness:init` is the single user-facing bootstrap entrypoint.
-
-It should:
-
-1. detect whether the target directory is `greenfield` or `migration`
-2. load the local bootstrap pack from `$HARNESS_CLI_HOME/harness-bootstrap` (fallback: `$CODEX_HOME/harness-bootstrap`, then `$HOME/.coding-cli/harness-bootstrap`)
-3. apply the correct bootstrap script
-4. leave `NEXT_STEP.md` pointing at the first spec or plan entrypoint through Superpowers
-
-The intended user instruction is always:
+Use only when the user asks to initialize or repair the project's collaboration-document skeleton:
 
 - `Use harness:init to initialize this project`
 
-## What Bootstrap Creates
+Load the bootstrap pack from `$HARNESS_CLI_HOME/harness-bootstrap`, falling back to `$CODEX_HOME/harness-bootstrap`, then `$HOME/.coding-cli/harness-bootstrap`.
 
-After bootstrap, the repository should have:
+## Allowed Output
 
-- root collaboration docs: `AGENTS.md`, `PROGRESS.md`, `MEMORY.md`, `NEXT_STEP.md`
-- project-level docs under `docs/project/`
-- Superpowers templates under `docs/superpowers/templates/`
-- target project `.gitignore` entries that ignore `docs/superpowers/`, `artifacts/`, and project-root `*.md`, while keeping `AGENTS.md` and root `README.md` trackable
+Bootstrap may create or maintain only:
 
-`PROGRESS.md`, `MEMORY.md`, `NEXT_STEP.md`, `docs/superpowers/`, and `artifacts/` are local-only collaboration state. They must not be staged, committed, pushed, or required for GitHub handoff. If upstream Superpowers text says to commit a spec or plan, this local-only Harness policy overrides it.
+```text
+AGENTS.md
+PROGRESS.md
+MEMORY.md
+NEXT_STEP.md
+docs/project/README.md
+docs/superpowers/templates/SPEC_TEMPLATE.md
+docs/superpowers/templates/PLAN_TEMPLATE.md
+docs/superpowers/templates/CHANGE_REQUEST_TEMPLATE.md
+docs/superpowers/templates/EVIDENCE_TEMPLATE.md
+.gitignore entries required by this document contract
+```
 
-Bootstrap standardizes the collaboration entrypoint. It does not claim that the repository already has runnable doc-health, lint, or test gates.
+The `.gitignore` contract is:
 
-## Mode Selection
+- ignore `PROGRESS.md`, `MEMORY.md`, `NEXT_STEP.md`, `docs/superpowers/`, `artifacts/`, and other generated root Markdown;
+- keep project `AGENTS.md` and root `README.md` trackable;
+- if local-only paths are already tracked during migration, remove them from the Git index without deleting working-tree files.
+
+## Modes
 
 ### Greenfield
 
-Use when the directory is empty or nearly empty.
-
-Expected result:
-
-- governance skeleton copied into the repository
-- templates available under `docs/superpowers/templates/`
-- `NEXT_STEP.md` points to spec creation
+Use for an empty or nearly empty target. Copy the minimal documents and templates, then point `NEXT_STEP.md` at the first spec entrypoint.
 
 ### Migration
 
-Use when the directory already contains code or framework markers.
+Use for a repository that already contains code or framework markers. Add missing baseline files without overwriting product code or established project documentation.
 
-Expected result:
+Mode detection must come from the bootstrap script; do not guess when detection is available.
 
-- missing Harness files added without overwriting product code
-- repository state is ready for a migration audit or first spec
+## Document Responsibilities
 
-Migration is additive by default, not destructive.
+- `AGENTS.md`: static project map, boundaries, and verification entrypoints.
+- `PROGRESS.md`: concise cumulative execution conclusions.
+- `MEMORY.md`: reusable lessons and stable constraints.
+- `NEXT_STEP.md`: one active spec/plan/checklist pointer.
+- `docs/project/README.md`: minimal project-document index.
+- `docs/superpowers/templates/`: spec, plan, change-request, and evidence shapes.
 
-## Superpowers Integration
+`PROGRESS.md`, `MEMORY.md`, `NEXT_STEP.md`, `docs/superpowers/`, and `artifacts/` remain local-only collaboration state.
 
-After bootstrap:
+## Prohibited Output
 
-- `brainstorming` creates specs from `docs/superpowers/templates/SPEC_TEMPLATE.md`
-- `writing-plans` creates plans from `docs/superpowers/templates/PLAN_TEMPLATE.md`
-- scope changes use `docs/superpowers/templates/CHANGE_REQUEST_TEMPLATE.md`
-- delivery evidence uses `docs/superpowers/templates/EVIDENCE_TEMPLATE.md`
-- `harness:doc-health` provides the governance standards agents must read during repository truth and pointer-drift workflows
+Do not create or install:
 
-`harness:init` does not replace Superpowers. It only prepares the repository so Superpowers can run against a stable, documented baseline.
+- executable runtime bundles;
+- Git or agent event hooks;
+- hidden manifests or preset TOML files;
+- default architecture or testing trees;
+- stack-specific generated documentation;
+- repository-local copies of unrelated skills;
+- broad example configuration unrelated to the allowed document set.
 
-## Recovery Model
+## Completion
 
-The lightweight baseline assumes:
-
-- `NEXT_STEP.md` is a pointer-only file that references the active spec, plan, or checklist
-- `PROGRESS.md` stores cumulative execution summaries and is optional to read on every turn
-- `MEMORY.md` stores stable lessons and should not become a running log
-- if state is unclear, agents recover it from `NEXT_STEP.md`, current spec/plan/checklist status, and bounded code review
-
-## Guardrails
-
-- Do not guess the repository mode if the detection script can answer it.
-- Do not overwrite product code during migration.
-- Do not vendor non-init Harness skills into any repository-local runtime directory.
-- Do not add local hooks, pre-commit files, preset manifests, broad gitignore examples, or stack-specific context docs beyond the minimal `docs/project/README.md` during bootstrap.
-- Only update the target project `.gitignore` for the Harness-generated docs/evidence contract: ignore `docs/superpowers/`, `artifacts/`, and project-root `*.md`, then unignore project-level `AGENTS.md` and root `README.md`.
-- If those local-only paths are already tracked during migration, remove them from the Git index without deleting working-tree files.
-- Do not stop at file creation only; leave a clear next action in `NEXT_STEP.md`.
-- Do not bake machine-specific absolute paths into scripts or generated project docs.
-- Do not reintroduce hidden manifest-based truth for user-level bootstrap.
-- At goal completion, perform a file-state review so `PROGRESS.md`, `MEMORY.md`, `NEXT_STEP.md`, and active spec/plan/checklist truth remain aligned.
-
-## Reference Pack
-
-- `references/repository-minimum.md`
-- `references/superpowers-integration-map.md`
-- `checklists/greenfield-bootstrap.md`
-- `checklists/migration-bootstrap.md`
-- `examples/greenfield-after.md`
-- `examples/migration-after.md`
+- Validate the generated target with `harness-bootstrap/scripts/validate_bootstrap.sh <target>`.
+- Confirm migration did not overwrite product files.
+- Leave exactly one executable next action in `NEXT_STEP.md`.

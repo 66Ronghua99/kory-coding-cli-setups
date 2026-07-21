@@ -9,7 +9,7 @@ related: []
 
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task.
+> **For agentic workers:** Execute each task in order, keep the checklist current, and run the declared verification before handoff.
 
 **Spec Path:** [Absolute or repository path to the approved spec]
 
