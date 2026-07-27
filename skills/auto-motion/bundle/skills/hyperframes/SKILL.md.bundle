@@ -1,0 +1,14 @@
+---
+name: hyperframes
+description: Entry skill for HyperFrames video authoring — routes to the correct specialized skill.
+---
+
+# HyperFrames — start here
+
+HyperFrames renders video from HTML. This skill routes you to the correct topic guide:
+
+- **Core concepts**: `skill://hyperframes/core/SKILL.md` — composition structure, timing attributes, tracks, sub-compositions
+- **CLI and workflow**: `skill://hyperframes/cli/SKILL.md` — init, add, render, validate, preview, publish
+- **Registry**: `skill://hyperframes/registry/SKILL.md` — install and wire blocks/components into compositions
+- **Animation**: `skill://hyperframes-motion` — atomic motion rules, blueprints, scene transitions, GSAP/Lottie/Three.js adapters
+- **Design**: `skill://hyperframes-design` — palettes, typography, frame presets, layout patterns

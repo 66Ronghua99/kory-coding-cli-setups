@@ -1,0 +1,17 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+node_modules/
+auto-test/.tmp/
+runs/
+scenes/
+final.mp4
+transcription.srt
+*.log
+.hyperframes/
+.auto-motion-tmp/
+renders/
+snapshots/
+docs
+*.md

@@ -1,0 +1,6 @@
+task:
+  maxConcurrency: 4
+  agentModelOverrides:
+    asset-scout: deepseek/deepseek-v4-flash
+    scene-builder: deepseek/deepseek-v4-pro
+    preference-curator: deepseek/deepseek-v4-flash

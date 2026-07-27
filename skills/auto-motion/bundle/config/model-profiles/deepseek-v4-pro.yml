@@ -1,0 +1,3 @@
+task:
+  agentModelOverrides:
+    scene-builder: deepseek/deepseek-v4-pro

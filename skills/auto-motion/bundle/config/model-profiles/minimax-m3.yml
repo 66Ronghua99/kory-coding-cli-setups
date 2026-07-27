@@ -1,0 +1,3 @@
+task:
+  agentModelOverrides:
+    scene-builder: minimax/MiniMax-M3

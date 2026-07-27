@@ -1,0 +1,34 @@
+---
+name: image-gen
+description: Generate a single image from a text prompt using the MiniMax image generation API.
+---
+
+# image-gen
+
+Generate one image from a text prompt via MiniMax `image-01` model.
+
+Set the MiniMax API key before running:
+
+```bash
+export MINIMAX_API_KEY="<your-api-key>"
+```
+
+## Usage
+
+```bash
+node .omp/skills/image-gen/scripts/image-gen.mjs "<prompt>" <width> <height> <output_filename>
+```
+
+| Argument | Type | Constraints |
+|---|---|---|
+| prompt | string | ≤ 1500 chars |
+| width | int | 512–2048, multiple of 8 |
+| height | int | 512–2048, multiple of 8 |
+| output_filename | string | output path relative to cwd |
+
+## Style keywords
+
+- **Flat / UI / vector**: `UI style`, `flat illustration`, `vector art`, `minimalist`
+- **Collage / cut-and-paste**: `paper cut collage`, `layered flat cut-out shapes`, `torn paper edges`
+- **Vintage / retro**: `vintage paper collage`, `sun-faded tones`, `retro travel poster`
+- **Photorealistic**: `photorealistic`, `documentary photography`, `film grain`

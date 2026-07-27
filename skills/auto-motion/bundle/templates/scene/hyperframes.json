@@ -1,0 +1,12 @@
+{
+  "name": "auto-motion-scene",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "gsap": "file:../../node_modules/gsap"
+  },
+  "compositions": ["index.html"],
+  "components": [],
+  "assets": []
+}

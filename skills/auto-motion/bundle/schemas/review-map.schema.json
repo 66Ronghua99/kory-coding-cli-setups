@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-motion.local/schemas/review-map.schema.json",
+  "title": "Auto-motion review map",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "run_id", "total_frames", "scenes"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "run_id": { "type": "string", "pattern": "^run-[A-Za-z0-9][A-Za-z0-9._-]*$" },
+    "total_frames": { "type": "integer", "minimum": 1 },
+    "scenes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["scene_id", "start_frame", "end_frame", "start_ms", "end_ms", "subtitle_ids", "revision", "artifact_path", "artifact_sha256"],
+        "properties": {
+          "scene_id": { "type": "string", "pattern": "^scene-[0-9]{3}$" },
+          "start_frame": { "type": "integer", "minimum": 0 },
+          "end_frame": { "type": "integer", "minimum": 1 },
+          "start_ms": { "type": "integer", "minimum": 0 },
+          "end_ms": { "type": "integer", "minimum": 1 },
+          "subtitle_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "integer", "minimum": 1 } },
+          "revision": { "type": "integer", "minimum": 1 },
+          "artifact_path": { "type": "string", "minLength": 1 },
+          "artifact_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    }
+  }
+}

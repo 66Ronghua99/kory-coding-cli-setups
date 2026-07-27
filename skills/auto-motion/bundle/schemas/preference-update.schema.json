@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-motion.local/schemas/preference-update.schema.json",
+  "title": "Auto-motion preference update",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "global", "project", "run_only"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "global": { "$ref": "#/$defs/layer" },
+    "project": { "$ref": "#/$defs/layer" },
+    "run_only": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1, "maxLength": 500 } }
+  },
+  "$defs": {
+    "layer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["set", "remove"],
+      "properties": {
+        "set": {
+          "type": "object",
+          "propertyNames": { "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$" },
+          "additionalProperties": { "type": ["string", "number", "boolean"] }
+        },
+        "remove": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$" }
+        }
+      }
+    }
+  }
+}

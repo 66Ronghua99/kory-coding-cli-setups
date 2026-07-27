@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-motion.local/schemas/scene-manifest.schema.json",
+  "title": "Auto-motion scene manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "run_id", "created_at", "input_path", "input_sha256", "visual_bible_sha256", "output_profile", "output_profile_sha256", "preferences_snapshot_sha256", "assets_index_sha256", "status", "assembly_status", "publication_status", "final_path", "final_sha256", "scenes"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "run_id": { "type": "string", "pattern": "^run-[A-Za-z0-9][A-Za-z0-9._-]*$" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "input_path": { "type": "string", "minLength": 1 },
+    "input_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "visual_bible_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "output_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "height", "fps", "audio", "publish"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "fps": { "type": "integer", "minimum": 1 },
+        "audio": { "const": "none" },
+        "publish": { "type": "string", "minLength": 1 }
+      }
+    },
+    "output_profile_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "preferences_snapshot_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "assets_index_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "status": { "type": "string", "enum": ["planning", "building", "paused", "ready", "assembling", "published", "failed"] },
+    "assembly_status": { "type": "string", "enum": ["pending", "passed", "failed"] },
+    "publication_status": { "type": "string", "enum": ["pending", "passed", "failed"] },
+    "final_path": { "type": ["string", "null"] },
+    "final_sha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+    "scenes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "start_frame", "end_frame", "frame_count", "category_ref", "packet_sha256", "context_sha256", "model_selector", "task_id", "session_id", "status", "repair_attempts", "revision", "status_path", "artifact_path", "artifact_sha256", "validation_path", "validation_sha256", "validation_ok", "failure_class", "failure_code", "failure_summary"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^scene-[0-9]{3}$" },
+          "start_frame": { "type": "integer", "minimum": 0 },
+          "end_frame": { "type": "integer", "minimum": 1 },
+          "frame_count": { "type": "integer", "minimum": 1 },
+          "category_ref": { "type": "string", "pattern": "^skill://" },
+          "packet_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "context_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "model_selector": { "type": "string", "minLength": 1 },
+          "task_id": { "type": ["string", "null"] },
+          "session_id": { "type": ["string", "null"] },
+          "status": { "type": "string", "enum": ["planned", "dispatched", "building", "validating", "passed", "repairable", "failed"] },
+          "repair_attempts": { "type": "integer", "minimum": 0, "maximum": 2 },
+          "revision": { "type": "integer", "minimum": 1 },
+          "status_path": { "type": "string", "minLength": 1 },
+          "artifact_path": { "type": ["string", "null"] },
+          "artifact_sha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+          "validation_path": { "type": ["string", "null"] },
+          "validation_sha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+          "validation_ok": { "type": ["boolean", "null"] },
+          "failure_class": { "type": ["string", "null"], "enum": ["technical", "provider", "contract", null] },
+          "failure_code": { "type": ["string", "null"] },
+          "failure_summary": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

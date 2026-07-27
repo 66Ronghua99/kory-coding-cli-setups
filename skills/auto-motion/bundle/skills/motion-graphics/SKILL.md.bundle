@@ -1,0 +1,23 @@
+---
+name: motion-graphics
+description: Reference pack for short-form motion graphics — kinematics, motion vocabulary, builder contract, and category samples.
+---
+
+# motion-graphics — reference pack
+
+This skill provides the **design vocabulary and motion reference** the main agent and scene builders use when authoring a motion-graphic scene. It does not dispatch subagents or create `videos/<project-name>`.
+
+## How to use
+
+1. The main agent chooses **one blueprint** from `skill://hyperframes-motion/blueprints/` and (optionally) **one rule** from `skill://hyperframes-motion/rules/`.
+2. The blueprint's category is resolved through `skill://hyperframes-motion/catalog.json`.
+3. Scene context includes the resolved category reference and relevant grounding material.
+
+## Skill references
+
+- **Catalog map**: `skill://motion-graphics/catalog-map.md`
+- **Categories**: `skill://motion-graphics/categories/`
+- **Grounding**: `skill://motion-graphics/grounding/`
+- **Builder contract**: `skill://motion-graphics/references/builder-contract.md`
+- **Motion vocabulary**: `skill://motion-graphics/references/motion-vocabulary.md`
+- **Samples**: `skill://motion-graphics/samples/`

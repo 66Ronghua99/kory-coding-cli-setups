@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-motion.local/schemas/scene-status.schema.json",
+  "title": "Auto-motion scene report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "scene_id", "reported_status", "artifact_path", "error_code", "error_summary", "updated_at"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "scene_id": { "type": "string", "pattern": "^scene-[0-9]{3}$" },
+    "reported_status": { "type": "string", "enum": ["building", "passed", "repairable", "failed"] },
+    "artifact_path": { "type": ["string", "null"] },
+    "error_code": { "type": ["string", "null"] },
+    "error_summary": { "type": ["string", "null"] },
+    "updated_at": { "type": "string", "format": "date-time" }
+  }
+}

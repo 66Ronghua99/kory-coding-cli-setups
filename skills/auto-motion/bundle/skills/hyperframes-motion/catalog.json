@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "blueprints": {
+    "skill://hyperframes-motion/blueprints/proof-logo-chain.md": "skill://motion-graphics/categories/logo-reveal/module.md",
+    "skill://hyperframes-motion/blueprints/concept-demo-decode-pan.md": "skill://motion-graphics/categories/webpage/module.md",
+    "skill://hyperframes-motion/blueprints/brand-reveal-assemble-zoom.md": "skill://motion-graphics/categories/logo-reveal/module.md",
+    "skill://hyperframes-motion/blueprints/takeover-ticker-displace.md": "skill://motion-graphics/categories/logo-reveal/module.md",
+    "skill://hyperframes-motion/blueprints/demo-page-scroll-spotlight.md": "skill://motion-graphics/categories/webpage/module.md",
+    "skill://hyperframes-motion/blueprints/hook-counter-burst.md": "skill://motion-graphics/categories/stat/module.md",
+    "skill://hyperframes-motion/blueprints/workflow-approve-press.md": "skill://motion-graphics/categories/webpage/module.md",
+    "skill://hyperframes-motion/blueprints/problem-mockup-overwhelm.md": "skill://motion-graphics/categories/webpage/module.md",
+    "skill://hyperframes-motion/blueprints/cta-orbit-collapse.md": "skill://motion-graphics/categories/asset-fusion/module.md",
+    "skill://hyperframes-motion/blueprints/cta-morph-press.md": "skill://motion-graphics/categories/logo-reveal/module.md",
+    "skill://hyperframes-motion/blueprints/comparison-split-cards.md": "skill://motion-graphics/categories/asset-fusion/module.md",
+    "skill://hyperframes-motion/blueprints/metric-video-text-pivot.md": "skill://motion-graphics/categories/stat/module.md",
+    "skill://hyperframes-motion/blueprints/messaging-multi-phrase.md": "skill://motion-graphics/categories/kinetic-type/module.md"
+  }
+}
