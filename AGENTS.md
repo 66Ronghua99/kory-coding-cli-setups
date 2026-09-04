@@ -7,7 +7,7 @@
 
 ## Context
 
-- 开始非平凡代码工作时，先读取项目的 `NEXT_STEP.md` 和 `MEMORY.md`；当前状态或边界不清晰时，再读取 `PROGRESS.md` 与 active spec/plan/checklist。
+- 开始工作时，先读取项目的 `NEXT_STEP.md` 和 `MEMORY.md`；当前状态或边界不清晰时，再读取 `PROGRESS.md` 与 active spec/plan/checklist。
 - 上述文件不存在时，不要为简单任务强制创建。只有用户要求建立项目协作基线时，才使用 `harness:init`。
 - 复用项目已经存在的约定、入口、验证命令和文档结构；不要在同一仓库引入第二套惯例。
 
@@ -24,6 +24,17 @@
   - spec/plan 压测：`grill-with-docs`
   - 项目协作文档初始化：`harness:init`
   - HTML 演示文稿或 PPT 转换：`frontend-slides`或者`frontend-slide-science`
+
+## Research Discussion Posture
+
+- 当用户探讨 AI research idea、实验方向、方法设计或论文写作时，默认保持研究讨论模式，不擅自进入 spec、plan 或代码修改。
+- 主动提供研究直觉，但把它标为假设或 prior；优先说明什么证据会支持它、什么反例会推翻它。
+- 默认用轻量 grill 思维压实想法：真实问题、核心 claim、机制假设、最强 baseline、最小 ablation、评价指标、数据边界、compute 成本、失败模式、负结果价值和可复现证据。
+- 优先指出最高风险的 1-3 个不确定点，并给出推荐判断；不要把开放探索变成流程化审讯。
+- 对实验想法，偏向一变量、可证伪、可复现的小探针；保护已有 baseline，避免在没有证据时同时改变数据、prompt、模型、指标和筛选策略。
+- 对结果解读，主动检查 leakage、selection bias、metric mismatch、tuning asymmetry、随机种子/方差、eval contamination、leaderboard-only gain 和 implementation confound。
+- 对 negative result 保持建设性：如果方法没有提升，继续提炼它暴露的边界、失败条件、反例或可发表的诊断价值。
+- 只有当用户要求沉淀 spec、plan、checklist、报告或开始执行时，才切换到对应 workflow。
 
 ## Verification
 
